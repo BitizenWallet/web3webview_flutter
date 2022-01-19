@@ -2,11 +2,12 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:web3webview_flutter/web3webview_flutter.dart';
 
+Future<Web3RpcResponse> _callback(Web3RpcRequest p1) async {
+  return Web3RpcResponse(error: "error");
+}
+
 void main() {
-  test('adds one to input values', () {
-    final calculator = Calculator();
-    expect(calculator.addOne(2), 3);
-    expect(calculator.addOne(-7), -6);
-    expect(calculator.addOne(0), 1);
+  test('ok', () {
+    Web3WebView(1.toRadixString(16), "https://cloudflare-eth.com", _callback);
   });
 }
