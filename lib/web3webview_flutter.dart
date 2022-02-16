@@ -354,18 +354,14 @@ class _Web3WebViewState extends State<Web3WebView> {
 
   @override
   Widget build(BuildContext context) {
-    log("bingo 1");
     if (Platform.isAndroid) {
       initialOptions = widget.initialOptions ?? InAppWebViewGroupOptions();
       initialOptions!.android.useShouldInterceptRequest = true;
     } else {
-      log("bingo 2");
       initialOptions = widget.initialOptions;
-      log("bingo 3");
     }
     _web3webViewController =
         Web3WebViewController(widget.initialChainId, widget.initialRpcUrl);
-    log("bingo 2");
 
     final allUserScript = getAllUserScript(widget.initialUrlRequest?.url);
 
@@ -478,5 +474,6 @@ class _Web3WebViewState extends State<Web3WebView> {
             body.replaceFirst("<body>", userScriptInject).codeUnits);
       }
     }
+    return resp;
   }
 }
