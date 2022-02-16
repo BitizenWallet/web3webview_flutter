@@ -366,7 +366,6 @@ class _Web3WebViewState extends State<Web3WebView> {
     final allUserScript = getAllUserScript(widget.initialUrlRequest?.url);
 
     return InAppWebView(
-      key: widget.key,
       onWebViewCreated: _onWeb3WebViewCreated,
       initialUrlRequest: widget.initialUrlRequest,
       windowId: widget.windowId,
