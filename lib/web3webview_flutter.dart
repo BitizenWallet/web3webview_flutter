@@ -98,6 +98,7 @@ class Web3WebView extends StatefulWidget {
   final String initialChainId;
   final String initialRpcUrl;
   final bool? debugEnabled;
+  final bool? keepAlive;
   final Future<Web3RpcResponse> Function(Web3RpcRequest) onRpcRequest;
 
   final URLRequest? initialUrlRequest;
@@ -241,6 +242,7 @@ class Web3WebView extends StatefulWidget {
     this.initialRpcUrl,
     this.onRpcRequest, {
     Key? key,
+    this.keepAlive,
     this.onWeb3WebViewCreated,
     this.initialUrlRequest,
     this.gestureRecognizers,
@@ -309,7 +311,8 @@ class Web3WebView extends StatefulWidget {
   State<Web3WebView> createState() => _Web3WebViewState();
 }
 
-class _Web3WebViewState extends State<Web3WebView> {
+class _Web3WebViewState extends State<Web3WebView>
+    with AutomaticKeepAliveClientMixin<Web3WebView> {
   InAppWebViewGroupOptions? initialOptions;
   late Web3WebViewController _web3webViewController;
 
@@ -475,4 +478,7 @@ class _Web3WebViewState extends State<Web3WebView> {
     }
     return resp;
   }
+
+  @override
+  bool get wantKeepAlive => widget.keepAlive ?? false;
 }
