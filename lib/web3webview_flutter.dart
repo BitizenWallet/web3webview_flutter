@@ -357,6 +357,8 @@ class _Web3WebViewState extends State<Web3WebView>
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
+
     if (Platform.isAndroid) {
       initialOptions = widget.initialOptions ?? InAppWebViewGroupOptions();
       initialOptions!.android.useShouldInterceptRequest = true;
