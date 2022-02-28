@@ -94,7 +94,6 @@ class _MyHomePageState extends State<MyHomePage> {
         "0x${100.toRadixString(16)}", "https://rpc.gnosischain.com");
     await _web3WebViewController!
         .emitChainChanged("0x${100.toRadixString(16)}");
-    await _web3WebViewController!.emitNetworkChanged(100);
     await _web3WebViewController!
         .emitAccountsChanged(["0x0000000000000000000000000000000000000002"]);
     log("testUpdateRpcUrl done");

@@ -69,6 +69,7 @@ class Web3WebViewController {
   }
 
   Future<dynamic> emitChainChanged(String newChainId) {
+    assert(newChainId.startsWith("0x"));
     return inAppWebViewController!.evaluateJavascript(
         source:
             'window.ethereum._BitizenEventEmit("chainChanged", ["$newChainId"]);');
@@ -78,6 +79,13 @@ class Web3WebViewController {
     return inAppWebViewController!.evaluateJavascript(
         source:
             'window.ethereum._BitizenEventEmit("networkChanged", [$networkId]);');
+  }
+
+  Future<dynamic> emitConnect(String chanId) {
+    assert(chanId.startsWith("0x"));
+    return inAppWebViewController!.evaluateJavascript(
+        source:
+            'window.ethereum._BitizenEventEmit("connect", [{"chainId": "$chainId"}]);');
   }
 
   Future<dynamic> emitAccountsChanged(List<String> newAccounts) {
