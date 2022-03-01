@@ -110,9 +110,8 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       body: Center(
         child: Web3WebView(
-          "0x${56.toRadixString(16)}",
-          "https://bsc-dataseed.binance.org",
           _callback,
+          _onRetriveRpc,
           initialUrlRequest: URLRequest(
               url: Uri.parse("https://metamask.github.io/test-dapp/")),
           onWeb3WebViewCreated: _onWeb3WebViewCreated,
@@ -125,5 +124,9 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void _onWeb3WebViewCreated(Web3WebViewController controller) {
     _web3WebViewController = controller;
+  }
+
+  Future<List<String>> _onRetriveRpc() async {
+    return ["0x${56.toRadixString(16)}", "https://bsc-dataseed.binance.org"];
   }
 }
