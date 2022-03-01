@@ -94,12 +94,13 @@ class _MyHomePageState extends State<MyHomePage> {
         "0x${100.toRadixString(16)}", "https://rpc.gnosischain.com");
     await _web3WebViewController!
         .emitChainChanged("0x${100.toRadixString(16)}");
+    await _web3WebViewController!.emitNetworkChanged(100);
     await _web3WebViewController!
         .emitAccountsChanged(["0x0000000000000000000000000000000000000002"]);
     log("testUpdateRpcUrl done");
     await Future.delayed(const Duration(seconds: 10));
     log("testUpdateRpcUrl test reload page");
-    await _web3WebViewController!.inAppWebViewController!.reload();
+    await _web3WebViewController!.reload();
   }
 
   @override
@@ -108,6 +109,10 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: AppBar(
         title: Text(_title),
       ),
+      floatingActionButton: FloatingActionButton(
+          onPressed: () =>
+              _web3WebViewController?.reload(),
+          child: const Text("X")),
       body: Center(
         child: Web3WebView(
           _callback,
@@ -126,7 +131,7 @@ class _MyHomePageState extends State<MyHomePage> {
     _web3WebViewController = controller;
   }
 
-  Future<List<String>> _onRetriveRpc() async {
+  List<String> _onRetriveRpc() {
     return ["0x${56.toRadixString(16)}", "https://bsc-dataseed.binance.org"];
   }
 }

@@ -52,47 +52,91 @@ class Web3RpcResponse {
 }
 
 class Web3WebViewController {
-  InAppWebViewController? inAppWebViewController;
+  InAppWebViewController? _inAppWebViewController;
+  Web3WebView widget;
 
-  Web3WebViewController({
-    this.inAppWebViewController,
-  });
+  Web3WebViewController(
+    this.widget, {
+    InAppWebViewController? inAppWebViewController,
+  }) {
+    _inAppWebViewController = inAppWebViewController;
+  }
+
+  Future<Uint8List?> takeScreenshot(
+      {ScreenshotConfiguration? screenshotConfiguration}) async {
+    return _inAppWebViewController?.takeScreenshot(
+        screenshotConfiguration: screenshotConfiguration);
+  }
+
+  Future<void> goBack() async {
+    return _inAppWebViewController?.goBack();
+  }
+
+  Future<bool?> canGoBack() async {
+    return _inAppWebViewController?.canGoBack();
+  }
 
   Future<dynamic> emitEvent(String topic, List<dynamic> args) {
-    return inAppWebViewController!.evaluateJavascript(
+    return _inAppWebViewController!.evaluateJavascript(
         source:
             'window.ethereum._BitizenEventEmit("$topic", "${jsonEncode(args)}");');
   }
 
   Future<dynamic> emitChainChanged(String newChainId) {
     assert(newChainId.startsWith("0x"));
-    return inAppWebViewController!.evaluateJavascript(
+    return _inAppWebViewController!.evaluateJavascript(
         source:
             'window.ethereum._BitizenEventEmit("chainChanged", ["$newChainId"]);');
   }
 
   Future<dynamic> emitNetworkChanged(int networkId) {
-    return inAppWebViewController!.evaluateJavascript(
+    return _inAppWebViewController!.evaluateJavascript(
         source:
             'window.ethereum._BitizenEventEmit("networkChanged", [$networkId]);');
   }
 
   Future<dynamic> emitConnect(String chainId) {
     assert(chainId.startsWith("0x"));
-    return inAppWebViewController!.evaluateJavascript(
+    return _inAppWebViewController!.evaluateJavascript(
         source:
             'window.ethereum._BitizenEventEmit("connect", [{"chainId": "$chainId"}]);');
   }
 
   Future<dynamic> emitAccountsChanged(List<String> newAccounts) {
-    return inAppWebViewController!.evaluateJavascript(
+    return _inAppWebViewController!.evaluateJavascript(
         source:
             'window.ethereum._BitizenEventEmit("accountsChanged", ${jsonEncode(newAccounts)});');
   }
 
   Future<dynamic> updateRpcUrl(String chainId, String rpcUrl) {
-    return inAppWebViewController!.evaluateJavascript(
+    return _inAppWebViewController!.evaluateJavascript(
         source: 'window.ethereum._BitizenUpdateRpcUrl("$chainId", "$rpcUrl");');
+  }
+
+  UnmodifiableListView<UserScript> getAllUserScript(Uri? url) {
+    final debugable = (widget.debugEnabled ?? false) ||
+        (url?.toString() ?? "").contains("__debug");
+    List<String> rpc = widget.onRetriveRpc();
+    if (debugable) {
+      log("web3webview_flutter getAllUserScript url: $url, debugable: $debugable rpc: $rpc");
+    }
+    return UnmodifiableListView([
+      UserScript(
+          source: injectJs
+              .replaceFirst("#BITIZEN_INJECT#", injectJsBundle)
+              .replaceFirst("#BITIZEN_DEBUG#", debugable ? "√" : "")
+              .replaceFirst("#BITIZEN_CHAINID#", rpc[0])
+              .replaceFirst("#BITIZEN_RPC#", rpc[1]),
+          injectionTime: UserScriptInjectionTime.AT_DOCUMENT_START),
+      ...?widget.initialUserScripts,
+    ]);
+  }
+
+  Future<void> reload() async {
+    await _inAppWebViewController!.removeAllUserScripts();
+    await _inAppWebViewController!.addUserScripts(
+        userScripts: getAllUserScript(await _inAppWebViewController!.getUrl()));
+    return _inAppWebViewController!.reload();
   }
 }
 
@@ -100,7 +144,7 @@ class Web3WebView extends StatefulWidget {
   final bool? debugEnabled;
   final bool? keepAlive;
   final Future<Web3RpcResponse> Function(Web3RpcRequest) onRpcRequest;
-  final Future<List<String>> Function() onRetriveRpc;
+  final List<String> Function() onRetriveRpc;
 
   final URLRequest? initialUrlRequest;
   final void Function(Web3WebViewController)? onWeb3WebViewCreated;
@@ -328,34 +372,14 @@ class _Web3WebViewState extends State<Web3WebView>
     if (widget.debugEnabled ?? false) {
       log("web3webview_flutter _onWeb3WebViewCreated $controller");
     }
-    _web3webViewController.inAppWebViewController = controller;
+    _web3webViewController._inAppWebViewController = controller;
 
     controller.addJavaScriptHandler(
         handlerName: "BitizenRpcRequest", callback: _bitizenRpcRequest);
 
-    controller.addJavaScriptHandler(
-        handlerName: "BitizenRetriveRpc", callback: _bitizenRetriveRpc);
-
     if (widget.onWeb3WebViewCreated != null) {
       widget.onWeb3WebViewCreated!(_web3webViewController);
     }
-  }
-
-  UnmodifiableListView<UserScript> getAllUserScript(Uri? url) {
-    final debugable = (widget.debugEnabled ?? false) ||
-        (url?.toString() ?? "").contains("__debug");
-    if (debugable) {
-      log("web3webview_flutter getAllUserScript url: $url, debugable: $debugable");
-    }
-
-    return UnmodifiableListView([
-      UserScript(
-          source: injectJs
-              .replaceFirst("#BITIZEN_INJECT#", injectJsBundle)
-              .replaceFirst("#BITIZEN_DEBUG#", debugable ? "√" : ""),
-          injectionTime: UserScriptInjectionTime.AT_DOCUMENT_START),
-      ...?widget.initialUserScripts,
-    ]);
   }
 
   Future<dynamic> _bitizenRpcRequest(List<dynamic> msg) async {
@@ -366,17 +390,6 @@ class _Web3WebViewState extends State<Web3WebView>
         .onRpcRequest(Web3RpcRequest.fromJson(jsonDecode(msg.first)));
     if (widget.debugEnabled ?? false) {
       log("web3webview_flutter _bitizenRpcResponse ${jsonEncode(resp)}");
-    }
-    return resp;
-  }
-
-  Future<List<String>> _bitizenRetriveRpc(List<dynamic> msg) async {
-    if (widget.debugEnabled ?? false) {
-      log("web3webview_flutter _bitizenRetriveRpc ${msg.first}");
-    }
-    final resp = await widget.onRetriveRpc();
-    if (widget.debugEnabled ?? false) {
-      log("web3webview_flutter _bitizenRetriveRpc ${jsonEncode(resp)}");
     }
     return resp;
   }
@@ -395,9 +408,10 @@ class _Web3WebViewState extends State<Web3WebView>
     } else {
       initialOptions = widget.initialOptions;
     }
-    _web3webViewController = Web3WebViewController();
+    _web3webViewController = Web3WebViewController(widget);
 
-    final allUserScript = getAllUserScript(widget.initialUrlRequest?.url);
+    final allUserScript =
+        _web3webViewController.getAllUserScript(widget.initialUrlRequest?.url);
 
     return InAppWebView(
       onWebViewCreated: _onWeb3WebViewCreated,
@@ -489,7 +503,7 @@ class _Web3WebViewState extends State<Web3WebView>
     );
 
     if (resp.contentType == "text/html") {
-      final allUserScripts = getAllUserScript(req.url);
+      final allUserScripts = _web3webViewController.getAllUserScript(req.url);
 
       String userScriptInject = "";
       for (var s in allUserScripts) {
