@@ -39,6 +39,10 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   String _title = 'Flutter Demo Home Page';
+  List<String> _rpc = [
+    "0x${56.toRadixString(16)}",
+    "https://bsc-dataseed.binance.org"
+  ];
 
   final demoAccounts = [
     "0x0000000000000000000000000000000000000000",
@@ -90,8 +94,8 @@ class _MyHomePageState extends State<MyHomePage> {
   void _testUpdateRpcUrl(InAppWebViewController controller) async {
     await Future.delayed(const Duration(seconds: 10));
     log("testUpdateRpcUrl");
-    await _web3WebViewController!.updateRpcUrl(
-        "0x${100.toRadixString(16)}", "https://rpc.gnosischain.com");
+    _rpc = ["0x${100.toRadixString(16)}", "https://rpc.gnosischain.com"];
+    await _web3WebViewController!.updateRpcUrl(_rpc[0], _rpc[1]);
     await _web3WebViewController!
         .emitChainChanged("0x${100.toRadixString(16)}");
     await _web3WebViewController!.emitNetworkChanged(100);
@@ -110,8 +114,7 @@ class _MyHomePageState extends State<MyHomePage> {
         title: Text(_title),
       ),
       floatingActionButton: FloatingActionButton(
-          onPressed: () =>
-              _web3WebViewController?.reload(),
+          onPressed: () => _web3WebViewController?.reload(),
           child: const Text("X")),
       body: Center(
         child: Web3WebView(
@@ -132,6 +135,6 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   List<String> _onRetriveRpc() {
-    return ["0x${56.toRadixString(16)}", "https://bsc-dataseed.binance.org"];
+    return _rpc;
   }
 }

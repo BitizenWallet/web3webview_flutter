@@ -76,40 +76,43 @@ class Web3WebViewController {
     return _inAppWebViewController?.canGoBack();
   }
 
-  Future<dynamic> emitEvent(String topic, List<dynamic> args) {
-    return _inAppWebViewController!.evaluateJavascript(
+  Future<dynamic> emitEvent(String topic, List<dynamic> args) async {
+    return _inAppWebViewController?.evaluateJavascript(
         source:
             'window.ethereum._BitizenEventEmit("$topic", "${jsonEncode(args)}");');
   }
 
-  Future<dynamic> emitChainChanged(String newChainId) {
+  Future<dynamic> emitChainChanged(String newChainId) async {
     assert(newChainId.startsWith("0x"));
-    return _inAppWebViewController!.evaluateJavascript(
+    return _inAppWebViewController?.evaluateJavascript(
         source:
             'window.ethereum._BitizenEventEmit("chainChanged", ["$newChainId"]);');
   }
 
-  Future<dynamic> emitNetworkChanged(int networkId) {
-    return _inAppWebViewController!.evaluateJavascript(
+  Future<dynamic> emitNetworkChanged(int networkId) async {
+    return _inAppWebViewController?.evaluateJavascript(
         source:
             'window.ethereum._BitizenEventEmit("networkChanged", [$networkId]);');
   }
 
-  Future<dynamic> emitConnect(String chainId) {
+  Future<dynamic> emitConnect(String chainId) async {
     assert(chainId.startsWith("0x"));
-    return _inAppWebViewController!.evaluateJavascript(
+    return _inAppWebViewController?.evaluateJavascript(
         source:
             'window.ethereum._BitizenEventEmit("connect", [{"chainId": "$chainId"}]);');
   }
 
-  Future<dynamic> emitAccountsChanged(List<String> newAccounts) {
-    return _inAppWebViewController!.evaluateJavascript(
+  Future<dynamic> emitAccountsChanged(List<String> newAccounts) async {
+    return _inAppWebViewController?.evaluateJavascript(
         source:
             'window.ethereum._BitizenEventEmit("accountsChanged", ${jsonEncode(newAccounts)});');
   }
 
-  Future<dynamic> updateRpcUrl(String chainId, String rpcUrl) {
-    return _inAppWebViewController!.evaluateJavascript(
+  Future<dynamic> updateRpcUrl(String chainId, String rpcUrl) async {
+    await _inAppWebViewController?.removeAllUserScripts();
+    await _inAppWebViewController?.addUserScripts(
+        userScripts: getAllUserScript(await _inAppWebViewController?.getUrl()));
+    return _inAppWebViewController?.evaluateJavascript(
         source: 'window.ethereum._BitizenUpdateRpcUrl("$chainId", "$rpcUrl");');
   }
 
@@ -133,10 +136,7 @@ class Web3WebViewController {
   }
 
   Future<void> reload() async {
-    await _inAppWebViewController!.removeAllUserScripts();
-    await _inAppWebViewController!.addUserScripts(
-        userScripts: getAllUserScript(await _inAppWebViewController!.getUrl()));
-    return _inAppWebViewController!.reload();
+    return _inAppWebViewController?.reload();
   }
 }
 
