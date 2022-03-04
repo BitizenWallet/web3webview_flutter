@@ -92,7 +92,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _testUpdateRpcUrl(InAppWebViewController controller) async {
-    await Future.delayed(const Duration(seconds: 10));
+    await Future.delayed(const Duration(seconds: 60));
     log("testUpdateRpcUrl");
     _rpc = ["0x${100.toRadixString(16)}", "https://rpc.gnosischain.com"];
     await _web3WebViewController!.updateRpcUrl(_rpc[0], _rpc[1]);
@@ -120,8 +120,13 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Web3WebView(
           _callback,
           _onRetriveRpc,
-          initialUrlRequest: URLRequest(
-              url: Uri.parse("https://metamask.github.io/test-dapp/")),
+          initialUrlRequest:
+          // URLRequest(url: Uri.parse("https://web3-react-mu.vercel.app")),
+          // URLRequest(url: Uri.parse("https://web3modal.com")),
+          // URLRequest(url: Uri.parse("https://app.sushi.com/en/swap")),
+          // URLRequest(url: Uri.parse("https://metamask.github.io/test-dapp/")),
+          URLRequest(url: Uri.parse("https://pancakeswap.finance/swap")),
+          // URLRequest(url: Uri.parse("https://app.uniswap.org")),
           onWeb3WebViewCreated: _onWeb3WebViewCreated,
           onLoadStop: _onPageFinished,
           debugEnabled: true,
