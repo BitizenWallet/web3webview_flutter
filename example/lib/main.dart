@@ -88,7 +88,7 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {
       _title = t ?? "";
     });
-    _testUpdateRpcUrl(controller);
+    // _testUpdateRpcUrl(controller);
   }
 
   void _testUpdateRpcUrl(InAppWebViewController controller) async {
@@ -121,11 +121,12 @@ class _MyHomePageState extends State<MyHomePage> {
           _callback,
           _onRetriveRpc,
           initialUrlRequest:
-          // URLRequest(url: Uri.parse("https://web3-react-mu.vercel.app")),
-          // URLRequest(url: Uri.parse("https://web3modal.com")),
-          // URLRequest(url: Uri.parse("https://app.sushi.com/en/swap")),
-          // URLRequest(url: Uri.parse("https://metamask.github.io/test-dapp/")),
-          URLRequest(url: Uri.parse("https://pancakeswap.finance/swap")),
+              // URLRequest(url: Uri.parse("https://web3-react-mu.vercel.app")),
+              // URLRequest(url: Uri.parse("https://web3modal.com")),
+              // URLRequest(url: Uri.parse("https://app.sushi.com/en/swap")),
+              URLRequest(
+                  url: Uri.parse("https://metamask.github.io/test-dapp/")),
+          // URLRequest(url: Uri.parse("https://pancakeswap.finance/swap")),
           // URLRequest(url: Uri.parse("https://app.uniswap.org")),
           onWeb3WebViewCreated: _onWeb3WebViewCreated,
           onLoadStop: _onPageFinished,
@@ -139,7 +140,8 @@ class _MyHomePageState extends State<MyHomePage> {
     _web3WebViewController = controller;
   }
 
-  List<String> _onRetriveRpc() {
+  Future<List<String>> _onRetriveRpc() async {
+    await Future.delayed(const Duration(seconds: 3));
     return _rpc;
   }
 }

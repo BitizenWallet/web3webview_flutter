@@ -12,6 +12,6 @@ Future<Web3RpcResponse> _callback(Web3RpcRequest p1) async {
   return Web3RpcResponse(error: "error");
 }
 
-List<String> _onRetriveRpc() {
+Future<List<String>> _onRetriveRpc() async {
   return [1.toRadixString(16), "https://cloudflare-eth.com"];
 }

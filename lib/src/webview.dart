@@ -111,15 +111,16 @@ class Web3WebViewController {
   Future<dynamic> updateRpcUrl(String chainId, String rpcUrl) async {
     await _inAppWebViewController?.removeAllUserScripts();
     await _inAppWebViewController?.addUserScripts(
-        userScripts: getAllUserScript(await _inAppWebViewController?.getUrl()));
+        userScripts:
+            await getAllUserScript(await _inAppWebViewController?.getUrl()));
     return _inAppWebViewController?.evaluateJavascript(
         source: 'window.ethereum._BitizenUpdateRpcUrl("$chainId", "$rpcUrl");');
   }
 
-  UnmodifiableListView<UserScript> getAllUserScript(Uri? url) {
+  Future<UnmodifiableListView<UserScript>> getAllUserScript(Uri? url) async {
     final debugable = (widget.debugEnabled ?? false) ||
         (url?.toString() ?? "").contains("__debug");
-    List<String> rpc = widget.onRetriveRpc();
+    List<String> rpc = await widget.onRetriveRpc();
     if (debugable) {
       log("web3webview_flutter getAllUserScript url: $url, debugable: $debugable rpc: $rpc");
     }
@@ -142,9 +143,8 @@ class Web3WebViewController {
 
 class Web3WebView extends StatefulWidget {
   final bool? debugEnabled;
-  final bool? keepAlive;
   final Future<Web3RpcResponse> Function(Web3RpcRequest) onRpcRequest;
-  final List<String> Function() onRetriveRpc;
+  final Future<List<String>> Function() onRetriveRpc;
 
   final URLRequest? initialUrlRequest;
   final void Function(Web3WebViewController)? onWeb3WebViewCreated;
@@ -286,7 +286,6 @@ class Web3WebView extends StatefulWidget {
     this.onRpcRequest,
     this.onRetriveRpc, {
     Key? key,
-    this.keepAlive,
     this.onWeb3WebViewCreated,
     this.initialUrlRequest,
     this.gestureRecognizers,
@@ -355,8 +354,7 @@ class Web3WebView extends StatefulWidget {
   State<Web3WebView> createState() => _Web3WebViewState();
 }
 
-class _Web3WebViewState extends State<Web3WebView>
-    with AutomaticKeepAliveClientMixin<Web3WebView> {
+class _Web3WebViewState extends State<Web3WebView> {
   InAppWebViewGroupOptions? initialOptions;
   late Web3WebViewController _web3webViewController;
 
@@ -364,7 +362,7 @@ class _Web3WebViewState extends State<Web3WebView>
   initState() {
     super.initState();
     if (widget.debugEnabled ?? false) {
-      log("web3webview_flutter Web3WebView initState keepAlive:${widget.keepAlive} url:${widget.initialUrlRequest?.url}");
+      log("web3webview_flutter Web3WebView initState url:${widget.initialUrlRequest?.url}");
     }
   }
 
@@ -396,10 +394,8 @@ class _Web3WebViewState extends State<Web3WebView>
 
   @override
   Widget build(BuildContext context) {
-    super.build(context);
-
     if (widget.debugEnabled ?? false) {
-      log("web3webview_flutter Web3WebView build keepAlive:${widget.keepAlive} url:${widget.initialUrlRequest?.url}");
+      log("web3webview_flutter Web3WebView build url:${widget.initialUrlRequest?.url}");
     }
 
     if (Platform.isAndroid) {
@@ -410,78 +406,86 @@ class _Web3WebViewState extends State<Web3WebView>
     }
     _web3webViewController = Web3WebViewController(widget);
 
-    final allUserScript =
-        _web3webViewController.getAllUserScript(widget.initialUrlRequest?.url);
-
-    return InAppWebView(
-      onWebViewCreated: _onWeb3WebViewCreated,
-      initialUrlRequest: widget.initialUrlRequest,
-      windowId: widget.windowId,
-      initialFile: widget.initialFile,
-      initialData: widget.initialData,
-      initialOptions: widget.initialOptions,
-      initialUserScripts: allUserScript,
-      pullToRefreshController: widget.pullToRefreshController,
-      contextMenu: widget.contextMenu,
-      onLoadStart: widget.onLoadStart,
-      onLoadStop: widget.onLoadStop,
-      onLoadError: widget.onLoadError,
-      onLoadHttpError: widget.onLoadHttpError,
-      onConsoleMessage: widget.onConsoleMessage,
-      onProgressChanged: widget.onProgressChanged,
-      shouldOverrideUrlLoading: widget.shouldOverrideUrlLoading,
-      onLoadResource: widget.onLoadResource,
-      onScrollChanged: widget.onScrollChanged,
-      onDownloadStart: widget.onDownloadStart,
-      onLoadResourceCustomScheme: widget.onLoadResourceCustomScheme,
-      onCreateWindow: widget.onCreateWindow,
-      onCloseWindow: widget.onCloseWindow,
-      onJsAlert: widget.onJsAlert,
-      onJsConfirm: widget.onJsConfirm,
-      onJsPrompt: widget.onJsPrompt,
-      onReceivedHttpAuthRequest: widget.onReceivedHttpAuthRequest,
-      onReceivedServerTrustAuthRequest: widget.onReceivedServerTrustAuthRequest,
-      onReceivedClientCertRequest: widget.onReceivedClientCertRequest,
-      onFindResultReceived: widget.onFindResultReceived,
-      shouldInterceptAjaxRequest: widget.shouldInterceptAjaxRequest,
-      onAjaxReadyStateChange: widget.onAjaxReadyStateChange,
-      onAjaxProgress: widget.onAjaxProgress,
-      shouldInterceptFetchRequest: widget.shouldInterceptFetchRequest,
-      onUpdateVisitedHistory: widget.onUpdateVisitedHistory,
-      onPrint: widget.onPrint,
-      onLongPressHitTestResult: widget.onLongPressHitTestResult,
-      onEnterFullscreen: widget.onEnterFullscreen,
-      onExitFullscreen: widget.onExitFullscreen,
-      onPageCommitVisible: widget.onPageCommitVisible,
-      onTitleChanged: widget.onTitleChanged,
-      onWindowFocus: widget.onWindowFocus,
-      onWindowBlur: widget.onWindowBlur,
-      onOverScrolled: widget.onOverScrolled,
-      onZoomScaleChanged: widget.onZoomScaleChanged,
-      androidOnSafeBrowsingHit: widget.androidOnSafeBrowsingHit,
-      androidOnPermissionRequest: widget.androidOnPermissionRequest,
-      androidOnGeolocationPermissionsShowPrompt:
-          widget.androidOnGeolocationPermissionsShowPrompt,
-      androidOnGeolocationPermissionsHidePrompt:
-          widget.androidOnGeolocationPermissionsHidePrompt,
-      androidShouldInterceptRequest: androidShouldInterceptRequest,
-      androidOnRenderProcessGone: widget.androidOnRenderProcessGone,
-      androidOnRenderProcessResponsive: widget.androidOnRenderProcessResponsive,
-      androidOnRenderProcessUnresponsive:
-          widget.androidOnRenderProcessUnresponsive,
-      androidOnFormResubmission: widget.androidOnFormResubmission,
-      androidOnReceivedIcon: widget.androidOnReceivedIcon,
-      androidOnReceivedTouchIconUrl: widget.androidOnReceivedTouchIconUrl,
-      androidOnJsBeforeUnload: widget.androidOnJsBeforeUnload,
-      androidOnReceivedLoginRequest: widget.androidOnReceivedLoginRequest,
-      iosOnWebContentProcessDidTerminate:
-          widget.iosOnWebContentProcessDidTerminate,
-      iosOnDidReceiveServerRedirectForProvisionalNavigation:
-          widget.iosOnDidReceiveServerRedirectForProvisionalNavigation,
-      iosOnNavigationResponse: widget.iosOnNavigationResponse,
-      iosShouldAllowDeprecatedTLS: widget.iosShouldAllowDeprecatedTLS,
-      gestureRecognizers: widget.gestureRecognizers,
-    );
+    return FutureBuilder(
+        future: _web3webViewController
+            .getAllUserScript(widget.initialUrlRequest?.url),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return Container();
+          }
+          return InAppWebView(
+            onWebViewCreated: _onWeb3WebViewCreated,
+            initialUrlRequest: widget.initialUrlRequest,
+            windowId: widget.windowId,
+            initialFile: widget.initialFile,
+            initialData: widget.initialData,
+            initialOptions: widget.initialOptions,
+            initialUserScripts:
+                snapshot.data! as UnmodifiableListView<UserScript>,
+            pullToRefreshController: widget.pullToRefreshController,
+            contextMenu: widget.contextMenu,
+            onLoadStart: widget.onLoadStart,
+            onLoadStop: widget.onLoadStop,
+            onLoadError: widget.onLoadError,
+            onLoadHttpError: widget.onLoadHttpError,
+            onConsoleMessage: widget.onConsoleMessage,
+            onProgressChanged: widget.onProgressChanged,
+            shouldOverrideUrlLoading: widget.shouldOverrideUrlLoading,
+            onLoadResource: widget.onLoadResource,
+            onScrollChanged: widget.onScrollChanged,
+            onDownloadStart: widget.onDownloadStart,
+            onLoadResourceCustomScheme: widget.onLoadResourceCustomScheme,
+            onCreateWindow: widget.onCreateWindow,
+            onCloseWindow: widget.onCloseWindow,
+            onJsAlert: widget.onJsAlert,
+            onJsConfirm: widget.onJsConfirm,
+            onJsPrompt: widget.onJsPrompt,
+            onReceivedHttpAuthRequest: widget.onReceivedHttpAuthRequest,
+            onReceivedServerTrustAuthRequest:
+                widget.onReceivedServerTrustAuthRequest,
+            onReceivedClientCertRequest: widget.onReceivedClientCertRequest,
+            onFindResultReceived: widget.onFindResultReceived,
+            shouldInterceptAjaxRequest: widget.shouldInterceptAjaxRequest,
+            onAjaxReadyStateChange: widget.onAjaxReadyStateChange,
+            onAjaxProgress: widget.onAjaxProgress,
+            shouldInterceptFetchRequest: widget.shouldInterceptFetchRequest,
+            onUpdateVisitedHistory: widget.onUpdateVisitedHistory,
+            onPrint: widget.onPrint,
+            onLongPressHitTestResult: widget.onLongPressHitTestResult,
+            onEnterFullscreen: widget.onEnterFullscreen,
+            onExitFullscreen: widget.onExitFullscreen,
+            onPageCommitVisible: widget.onPageCommitVisible,
+            onTitleChanged: widget.onTitleChanged,
+            onWindowFocus: widget.onWindowFocus,
+            onWindowBlur: widget.onWindowBlur,
+            onOverScrolled: widget.onOverScrolled,
+            onZoomScaleChanged: widget.onZoomScaleChanged,
+            androidOnSafeBrowsingHit: widget.androidOnSafeBrowsingHit,
+            androidOnPermissionRequest: widget.androidOnPermissionRequest,
+            androidOnGeolocationPermissionsShowPrompt:
+                widget.androidOnGeolocationPermissionsShowPrompt,
+            androidOnGeolocationPermissionsHidePrompt:
+                widget.androidOnGeolocationPermissionsHidePrompt,
+            androidShouldInterceptRequest: androidShouldInterceptRequest,
+            androidOnRenderProcessGone: widget.androidOnRenderProcessGone,
+            androidOnRenderProcessResponsive:
+                widget.androidOnRenderProcessResponsive,
+            androidOnRenderProcessUnresponsive:
+                widget.androidOnRenderProcessUnresponsive,
+            androidOnFormResubmission: widget.androidOnFormResubmission,
+            androidOnReceivedIcon: widget.androidOnReceivedIcon,
+            androidOnReceivedTouchIconUrl: widget.androidOnReceivedTouchIconUrl,
+            androidOnJsBeforeUnload: widget.androidOnJsBeforeUnload,
+            androidOnReceivedLoginRequest: widget.androidOnReceivedLoginRequest,
+            iosOnWebContentProcessDidTerminate:
+                widget.iosOnWebContentProcessDidTerminate,
+            iosOnDidReceiveServerRedirectForProvisionalNavigation:
+                widget.iosOnDidReceiveServerRedirectForProvisionalNavigation,
+            iosOnNavigationResponse: widget.iosOnNavigationResponse,
+            iosShouldAllowDeprecatedTLS: widget.iosShouldAllowDeprecatedTLS,
+            gestureRecognizers: widget.gestureRecognizers,
+          );
+        });
   }
 
   Future<WebResourceResponse?> androidShouldInterceptRequest(
@@ -503,7 +507,8 @@ class _Web3WebViewState extends State<Web3WebView>
     );
 
     if (resp.contentType == "text/html") {
-      final allUserScripts = _web3webViewController.getAllUserScript(req.url);
+      final allUserScripts =
+          await _web3webViewController.getAllUserScript(req.url);
 
       String userScriptInject = "";
       for (var s in allUserScripts) {
@@ -528,7 +533,4 @@ class _Web3WebViewState extends State<Web3WebView>
 
     return resp;
   }
-
-  @override
-  bool get wantKeepAlive => widget.keepAlive ?? false;
 }
