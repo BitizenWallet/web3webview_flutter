@@ -72,6 +72,10 @@ class Web3WebViewController {
     return _inAppWebViewController?.goBack();
   }
 
+  Future<void> loadUrl(URLRequest req) async {
+    return _inAppWebViewController?.loadUrl(urlRequest: req);
+  }
+
   Future<bool?> canGoBack() async {
     return _inAppWebViewController?.canGoBack();
   }
