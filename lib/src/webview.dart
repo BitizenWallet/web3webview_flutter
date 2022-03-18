@@ -524,14 +524,12 @@ class _Web3WebViewState extends State<Web3WebView> {
       }
 
       final body = String.fromCharCodes(resp.data ?? []);
-      if (body.contains("</head>")) {
-        userScriptInject += "</head>";
+      if (body.contains("<head>")) {
         resp.data = Uint8List.fromList(
-            body.replaceFirst("</head>", userScriptInject).codeUnits);
+            body.replaceFirst("<head>", "<head>" + userScriptInject).codeUnits);
       } else if (body.contains("<body>")) {
-        userScriptInject = "<body>" + userScriptInject;
         resp.data = Uint8List.fromList(
-            body.replaceFirst("<body>", userScriptInject).codeUnits);
+            body.replaceFirst("<body>", "<body>" + userScriptInject).codeUnits);
       }
     }
 
