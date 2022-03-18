@@ -412,11 +412,14 @@ class _Web3WebViewState extends State<Web3WebView> {
     } else {
       initialOptions = widget.initialOptions;
     }
+
     _web3webViewController = Web3WebViewController(widget);
 
     return FutureBuilder(
-        future: _web3webViewController
-            .getAllUserScript(widget.initialUrlRequest?.url),
+        future: Platform.isAndroid
+            ? Future.value(UnmodifiableListView<UserScript>([]))
+            : _web3webViewController
+                .getAllUserScript(widget.initialUrlRequest?.url),
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
             return Container();
@@ -427,7 +430,7 @@ class _Web3WebViewState extends State<Web3WebView> {
             windowId: widget.windowId,
             initialFile: widget.initialFile,
             initialData: widget.initialData,
-            initialOptions: widget.initialOptions,
+            initialOptions: initialOptions,
             initialUserScripts:
                 snapshot.data! as UnmodifiableListView<UserScript>,
             pullToRefreshController: widget.pullToRefreshController,
@@ -503,7 +506,9 @@ class _Web3WebViewState extends State<Web3WebView> {
       req.headers[key] = value;
     });
     final originResp = await req.send();
-    final contentTypeHeader = originResp.headers["Content-Type"]?.split(";");
+    final contentTypeHeader = (originResp.headers["content-type"] ??
+            originResp.headers["Content-Type"])
+        ?.split(";");
     final contentEncoding = contentTypeHeader?[1].split("=");
     final resp = WebResourceResponse(
       contentType: contentTypeHeader?[0] ?? "",
@@ -534,7 +539,7 @@ class _Web3WebViewState extends State<Web3WebView> {
     }
 
     if (widget.debugEnabled ?? false) {
-      log("web3webview_flutter androidShouldInterceptRequest ${req.url.toString()} ${resp.contentType}");
+      log("web3webview_flutter androidShouldInterceptRequest ${resp.contentType} ${req.url.toString()}");
     }
 
     return resp;
