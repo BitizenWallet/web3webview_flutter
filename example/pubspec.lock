@@ -211,7 +211,7 @@ packages:
       path: ".."
       relative: true
     source: path
-    version: "0.0.22"
+    version: "0.0.23"
   webview_flutter:
     dependency: "direct main"
     description:
