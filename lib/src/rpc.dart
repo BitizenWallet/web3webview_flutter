@@ -4,15 +4,15 @@ part 'rpc.g.dart';
 
 @JsonSerializable()
 class RPCError implements Exception {
-  final int errorCode;
+  final int code;
   final String message;
   final dynamic data;
 
-  const RPCError(this.errorCode, this.message, this.data);
+  const RPCError(this.code, this.message, this.data);
 
   @override
   String toString() {
-    return 'RPCError: got code $errorCode with msg "$message".';
+    return 'RPCError: got code $code with msg "$message".';
   }
 
   factory RPCError.fromJson(Map<String, dynamic> json) =>

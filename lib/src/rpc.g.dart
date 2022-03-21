@@ -13,7 +13,7 @@ RPCError _$RPCErrorFromJson(Map<String, dynamic> json) => RPCError(
     );
 
 Map<String, dynamic> _$RPCErrorToJson(RPCError instance) => <String, dynamic>{
-      'errorCode': instance.errorCode,
+      'errorCode': instance.code,
       'message': instance.message,
       'data': instance.data,
     };
