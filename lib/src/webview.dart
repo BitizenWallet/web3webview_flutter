@@ -13,7 +13,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:http/http.dart' as http;
-import 'package:web3webview_flutter/src/assets.dart';
+
+import 'assets.dart';
 
 part 'webview.g.dart';
 
@@ -145,7 +146,12 @@ class Web3WebViewController {
   }
 
   Future<void> reload() async {
-    return _inAppWebViewController?.reload();
+    return Platform.isAndroid
+        ? _inAppWebViewController?.reload()
+        : _inAppWebViewController?.loadUrl(
+            urlRequest: URLRequest(
+                url: await _inAppWebViewController?.getUrl() ??
+                    widget.initialUrlRequest!.url!));
   }
 }
 

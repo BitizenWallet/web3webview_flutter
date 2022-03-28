@@ -2,6 +2,7 @@ import 'dart:developer';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:web3webview_flutter/web3webview_flutter.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 
@@ -120,16 +121,32 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Web3WebView(
           _callback,
           _onRetriveRpc,
+          initialOptions: InAppWebViewGroupOptions(
+              crossPlatform: InAppWebViewOptions(
+                useShouldOverrideUrlLoading: true,
+                mediaPlaybackRequiresUserGesture: false,
+              ),
+              android: AndroidInAppWebViewOptions(
+                useHybridComposition: true,
+              ),
+              ios: IOSInAppWebViewOptions(
+                allowsInlineMediaPlayback: true,
+              )),
           initialUrlRequest:
               // URLRequest(url: Uri.parse("https://web3-react-mu.vercel.app")),
               // URLRequest(url: Uri.parse("https://web3modal.com")),
               // URLRequest(url: Uri.parse("https://app.sushi.com/en/swap")),
+              // URLRequest(
+              //     url: Uri.parse(
+              //         "https://baidu.com")),
               URLRequest(
-                  url: Uri.parse("https://metamask.github.io/test-dapp/")),
+                  url: Uri.parse(
+                      "https://duckduckgo.com/?q=ethereum+account+balance")),
           // URLRequest(url: Uri.parse("https://pancakeswap.finance/swap")),
           // URLRequest(url: Uri.parse("https://app.uniswap.org")),
           onWeb3WebViewCreated: _onWeb3WebViewCreated,
           onLoadStop: _onPageFinished,
+          shouldOverrideUrlLoading: _shouldOverrideUrlLoading,
           debugEnabled: true,
         ),
       ),
@@ -143,5 +160,25 @@ class _MyHomePageState extends State<MyHomePage> {
   Future<List<String>> _onRetriveRpc() async {
     await Future.delayed(const Duration(seconds: 3));
     return _rpc;
+  }
+
+  Future<NavigationActionPolicy?> _shouldOverrideUrlLoading(
+      InAppWebViewController controller,
+      NavigationAction navigationAction) async {
+    var uri = navigationAction.request.url!;
+
+    log("bingo _shouldOverrideUrlLoading ${uri.toString()}");
+
+    if (!["http", "https", "file", "chrome", "data", "javascript", "about"]
+        .contains(uri.scheme)) {
+      if (await canLaunch(uri.toString())) {
+        await launch(
+          uri.toString(),
+        );
+      }
+      return NavigationActionPolicy.CANCEL;
+    }
+
+    return NavigationActionPolicy.ALLOW;
   }
 }
