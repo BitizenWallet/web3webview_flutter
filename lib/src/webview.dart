@@ -525,6 +525,10 @@ class _Web3WebViewState extends State<Web3WebView> {
       reasonPhrase: originResp.reasonPhrase,
     );
 
+    if (resp.statusCode != 200) {
+      return resp;
+    }
+
     if (resp.contentType == "text/html") {
       final allUserScripts =
           await _web3webViewController.getAllUserScript(req.url);
