@@ -7,12 +7,12 @@ import 'dart:developer';
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:json_annotation/json_annotation.dart';
-import 'package:http/http.dart' as http;
 
 import 'assets.dart';
 
@@ -507,31 +507,40 @@ class _Web3WebViewState extends State<Web3WebView> {
 
   Future<WebResourceResponse?> androidShouldInterceptRequest(
       InAppWebViewController controller, WebResourceRequest request) async {
-    final req = http.Request(request.method ?? "GET", request.url);
-    request.headers?.forEach((key, value) {
-      req.headers[key] = value;
-    });
-    final originResp = await req.send();
+    final req = RequestOptions(
+        followRedirects: false,
+        method: request.method,
+        path: request.url.toString(),
+        headers: request.headers,
+        responseType: ResponseType.bytes);
+    final Response<List<int>> originResp = await Dio().fetch<List<int>>(req);
     final contentTypeHeader = (originResp.headers["content-type"] ??
             originResp.headers["Content-Type"])
-        ?.split(";");
-    final contentEncoding = contentTypeHeader?[1].split("=");
+        .toString()
+        .split(";");
+    final contentEncoding = contentTypeHeader[1].split("=");
+
+    final Map<String, String> headers = {};
+    originResp.headers.map.forEach((key, value) {
+      headers[key] = value.join(";");
+    });
+
     final resp = WebResourceResponse(
-      contentType: contentTypeHeader?[0] ?? "",
-      contentEncoding: contentEncoding?[1] ?? "utf-8",
-      data: await originResp.stream.toBytes(),
-      headers: originResp.headers,
+      contentType: contentTypeHeader[0],
+      contentEncoding: contentEncoding[1],
+      data: Uint8List.fromList(originResp.data ?? []),
+      headers: headers,
       statusCode: originResp.statusCode,
-      reasonPhrase: originResp.reasonPhrase,
+      reasonPhrase: originResp.statusMessage,
     );
 
-    if (resp.statusCode != 200) {
+    if (resp.statusCode != 200 || (originResp.isRedirect ?? false)) {
       return resp;
     }
 
     if (resp.contentType == "text/html") {
       final allUserScripts =
-          await _web3webViewController.getAllUserScript(req.url);
+          await _web3webViewController.getAllUserScript(request.url);
 
       String userScriptInject = "";
       for (var s in allUserScripts) {
@@ -549,7 +558,7 @@ class _Web3WebViewState extends State<Web3WebView> {
     }
 
     if (widget.debugEnabled ?? false) {
-      log("web3webview_flutter androidShouldInterceptRequest ${resp.contentType} ${req.url.toString()}");
+      log("web3webview_flutter androidShouldInterceptRequest ${resp.contentType} ${request.url.toString()}");
     }
 
     return resp;
