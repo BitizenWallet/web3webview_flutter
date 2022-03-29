@@ -92,6 +92,7 @@ class _MyHomePageState extends State<MyHomePage> {
     // _testUpdateRpcUrl(controller);
   }
 
+  // ignore: unused_element
   void _testUpdateRpcUrl(InAppWebViewController controller) async {
     await Future.delayed(const Duration(seconds: 60));
     log("testUpdateRpcUrl");
