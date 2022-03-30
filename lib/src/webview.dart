@@ -422,9 +422,8 @@ class _Web3WebViewState extends State<Web3WebView> {
     _web3webViewController = Web3WebViewController(widget);
 
     return FutureBuilder(
-        future: Platform.isAndroid
-            ? Future.value(UnmodifiableListView<UserScript>([]))
-            : _web3webViewController
+        future: // FIXME Platform.isAndroid ? Future.value(UnmodifiableListView<UserScript>([])) :
+            _web3webViewController
                 .getAllUserScript(widget.initialUrlRequest?.url),
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
@@ -439,6 +438,7 @@ class _Web3WebViewState extends State<Web3WebView> {
             initialOptions: initialOptions,
             initialUserScripts:
                 snapshot.data! as UnmodifiableListView<UserScript>,
+            // FIXME androidShouldInterceptRequest: androidShouldInterceptRequest,
             pullToRefreshController: widget.pullToRefreshController,
             contextMenu: widget.contextMenu,
             onLoadStart: widget.onLoadStart,
@@ -483,7 +483,6 @@ class _Web3WebViewState extends State<Web3WebView> {
                 widget.androidOnGeolocationPermissionsShowPrompt,
             androidOnGeolocationPermissionsHidePrompt:
                 widget.androidOnGeolocationPermissionsHidePrompt,
-            androidShouldInterceptRequest: androidShouldInterceptRequest,
             androidOnRenderProcessGone: widget.androidOnRenderProcessGone,
             androidOnRenderProcessResponsive:
                 widget.androidOnRenderProcessResponsive,
@@ -507,28 +506,64 @@ class _Web3WebViewState extends State<Web3WebView> {
 
   Future<WebResourceResponse?> androidShouldInterceptRequest(
       InAppWebViewController controller, WebResourceRequest request) async {
+    if (request.method != "GET") {
+      return null;
+    }
+
     final req = RequestOptions(
-        followRedirects: false,
-        method: request.method,
-        path: request.url.toString(),
-        headers: request.headers,
-        responseType: ResponseType.bytes);
-    final Response<List<int>> originResp = await Dio().fetch<List<int>>(req);
+      followRedirects: false,
+      method: request.method,
+      path: request.url.toString(),
+      headers: request.headers,
+      responseType: ResponseType.bytes,
+    );
+
+    Response<dynamic> originResp;
+
+    try {
+      originResp = await Dio().fetch<List<int>>(req);
+    } on DioError catch (e) {
+      if (e.response != null) {
+        originResp = e.response!;
+        // FIXME https://developer.android.com/reference/android/webkit/WebResourceResponse 3xx is not supported
+        if (originResp.statusCode != null &&
+            originResp.statusCode! >= 300 &&
+            originResp.statusCode! < 400) {
+          return null;
+        }
+      } else {
+        rethrow;
+      }
+    }
+
     final contentTypeHeader = (originResp.headers["content-type"] ??
             originResp.headers["Content-Type"])
         .toString()
         .split(";");
-    final contentEncoding = contentTypeHeader[1].split("=");
+
+    List<String> contentEncoding = [];
+
+    if (contentTypeHeader.length > 1) {
+      contentEncoding = contentTypeHeader[1].split("=");
+    }
 
     final Map<String, String> headers = {};
     originResp.headers.map.forEach((key, value) {
       headers[key] = value.join(";");
     });
 
+    final Uint8List data = originResp.data.runtimeType.toString() == "List<int>"
+        ? Uint8List.fromList(originResp.data ?? [])
+        : (originResp.data.runtimeType.toString() == "Uint8List"
+            ? originResp.data
+            : null);
+
+    log("bingo ${originResp.realUri.toString()} ${originResp.statusCode} ${originResp.statusMessage} ${originResp.isRedirect}");
+
     final resp = WebResourceResponse(
-      contentType: contentTypeHeader[0],
-      contentEncoding: contentEncoding[1],
-      data: Uint8List.fromList(originResp.data ?? []),
+      contentType: contentTypeHeader.isEmpty ? '' : contentTypeHeader[0],
+      contentEncoding: contentEncoding.length > 1 ? contentEncoding[1] : '',
+      data: data,
       headers: headers,
       statusCode: originResp.statusCode,
       reasonPhrase: originResp.statusMessage,

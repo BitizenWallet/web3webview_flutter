@@ -140,14 +140,14 @@ class _MyHomePageState extends State<MyHomePage> {
               // URLRequest(
               //     url: Uri.parse(
               //         "https://baidu.com")),
-              URLRequest(
-                  url: Uri.parse(
-                      "https://duckduckgo.com/?q=ethereum+account+balance")),
-          // URLRequest(url: Uri.parse("https://pancakeswap.finance/swap")),
-          // URLRequest(url: Uri.parse("https://app.uniswap.org")),
+              // URLRequest(
+              //     url: Uri.parse("https://ddg.gg/?q=ethereum+account+balance")),
+              // URLRequest(url: Uri.parse("https://pancakeswap.finance/swap")),
+              URLRequest(url: Uri.parse("https://app.uniswap.org")),
           onWeb3WebViewCreated: _onWeb3WebViewCreated,
           onLoadStop: _onPageFinished,
           shouldOverrideUrlLoading: _shouldOverrideUrlLoading,
+          onLoadError: _onLoadError,
           debugEnabled: true,
         ),
       ),
@@ -181,5 +181,10 @@ class _MyHomePageState extends State<MyHomePage> {
     }
 
     return NavigationActionPolicy.ALLOW;
+  }
+
+  void _onLoadError(
+      InAppWebViewController controller, Uri? url, int code, String message) {
+    log("bingo _onLoadError $url $code $message");
   }
 }
