@@ -510,6 +510,10 @@ class _Web3WebViewState extends State<Web3WebView> {
 
   Future<WebResourceResponse?> androidShouldInterceptRequest(
       InAppWebViewController controller, WebResourceRequest request) async {
+    if (request.method != 'GET') {
+      return null;
+    }
+
     final req = RequestOptions(
       followRedirects: false,
       method: request.method,

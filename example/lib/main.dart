@@ -41,9 +41,14 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   String _title = 'Flutter Demo Home Page';
   List<String> _rpc = [
-    "0x${56.toRadixString(16)}",
-    "https://bsc-dataseed.binance.org"
+    "0x${1.toRadixString(16)}",
+    "https://cloudflare-eth.com/",
   ];
+
+  // List<String> _rpc = [
+  //   "0x${56.toRadixString(16)}",
+  //   "https://bsc-dataseed.binance.org"
+  // ];
 
   final demoAccounts = [
     "0x0000000000000000000000000000000000000000",
@@ -143,12 +148,14 @@ class _MyHomePageState extends State<MyHomePage> {
               // URLRequest(
               //     url: Uri.parse("https://ddg.gg/?q=ethereum+account+balance")),
               // URLRequest(url: Uri.parse("https://pancakeswap.finance/swap")),
-              URLRequest(url: Uri.parse("https://app.uniswap.org")),
+              // URLRequest(url: Uri.parse("https://app.uniswap.org")),
+              URLRequest(
+                  url: Uri.parse("https://bitizenwallet.github.io/test-dapp/")),
           onWeb3WebViewCreated: _onWeb3WebViewCreated,
           onLoadStop: _onPageFinished,
           shouldOverrideUrlLoading: _shouldOverrideUrlLoading,
           onLoadError: _onLoadError,
-          debugEnabled: true,
+          // debugEnabled: true,
         ),
       ),
     );
