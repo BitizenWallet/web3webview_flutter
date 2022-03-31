@@ -72,9 +72,11 @@ packages:
   flutter_inappwebview:
     dependency: transitive
     description:
-      name: flutter_inappwebview
-      url: "https://pub.dartlang.org"
-    source: hosted
+      path: "."
+      ref: master
+      resolved-ref: fb6fe33b75ffe2c662561af729d1cdd8ed4cf159
+      url: "git@github.com:BitizenWallet/flutter_inappwebview.git"
+    source: git
     version: "5.3.2"
   flutter_lints:
     dependency: "direct dev"
