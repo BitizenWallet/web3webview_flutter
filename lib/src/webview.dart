@@ -275,9 +275,9 @@ class Web3WebView extends StatefulWidget {
   final void Function(
           InAppWebViewController controller, double oldScale, double newScale)?
       onZoomScaleChanged;
-  // final Future<WebResourceResponse?> Function(
-  //         InAppWebViewController controller, WebResourceRequest request)?
-  //     androidShouldInterceptRequest;
+  final Future<WebResourceResponse?> Function(
+          InAppWebViewController controller, WebResourceRequest request)?
+      androidShouldInterceptRequest;
   final Future<WebViewRenderProcessAction?> Function(
           InAppWebViewController controller, Uri? url)?
       androidOnRenderProcessUnresponsive;
@@ -308,6 +308,7 @@ class Web3WebView extends StatefulWidget {
     this.androidOnGeolocationPermissionsShowPrompt,
     this.androidOnPermissionRequest,
     this.androidOnSafeBrowsingHit,
+    this.androidShouldInterceptRequest,
     this.initialData,
     this.initialFile,
     this.initialOptions,
@@ -422,8 +423,9 @@ class _Web3WebViewState extends State<Web3WebView> {
     _web3webViewController = Web3WebViewController(widget);
 
     return FutureBuilder(
-        future: // FIXME Platform.isAndroid ? Future.value(UnmodifiableListView<UserScript>([])) :
-            _web3webViewController
+        future: Platform.isAndroid
+            ? Future.value(UnmodifiableListView<UserScript>([]))
+            : _web3webViewController
                 .getAllUserScript(widget.initialUrlRequest?.url),
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
@@ -438,7 +440,9 @@ class _Web3WebViewState extends State<Web3WebView> {
             initialOptions: initialOptions,
             initialUserScripts:
                 snapshot.data! as UnmodifiableListView<UserScript>,
-            // FIXME androidShouldInterceptRequest: androidShouldInterceptRequest,
+            androidShouldInterceptRequest:
+                widget.androidShouldInterceptRequest ??
+                    androidShouldInterceptRequest,
             pullToRefreshController: widget.pullToRefreshController,
             contextMenu: widget.contextMenu,
             onLoadStart: widget.onLoadStart,
@@ -506,10 +510,6 @@ class _Web3WebViewState extends State<Web3WebView> {
 
   Future<WebResourceResponse?> androidShouldInterceptRequest(
       InAppWebViewController controller, WebResourceRequest request) async {
-    if (request.method != "GET") {
-      return null;
-    }
-
     final req = RequestOptions(
       followRedirects: false,
       method: request.method,
@@ -525,7 +525,7 @@ class _Web3WebViewState extends State<Web3WebView> {
     } on DioError catch (e) {
       if (e.response != null) {
         originResp = e.response!;
-        // FIXME https://developer.android.com/reference/android/webkit/WebResourceResponse 3xx is not supported
+        // https://developer.android.com/reference/android/webkit/WebResourceResponse 3xx is not supported
         if (originResp.statusCode != null &&
             originResp.statusCode! >= 300 &&
             originResp.statusCode! < 400) {
@@ -539,6 +539,8 @@ class _Web3WebViewState extends State<Web3WebView> {
     final contentTypeHeader = (originResp.headers["content-type"] ??
             originResp.headers["Content-Type"])
         .toString()
+        .replaceAll("[", "")
+        .replaceAll("]", "")
         .split(";");
 
     List<String> contentEncoding = [];
@@ -558,7 +560,7 @@ class _Web3WebViewState extends State<Web3WebView> {
             ? originResp.data
             : null);
 
-    log("bingo ${originResp.realUri.toString()} ${originResp.statusCode} ${originResp.statusMessage} ${originResp.isRedirect}");
+    // log("bingo ${originResp.realUri.toString()} ${originResp.statusCode} ${originResp.statusMessage} ${originResp.isRedirect}");
 
     final resp = WebResourceResponse(
       contentType: contentTypeHeader.isEmpty ? '' : contentTypeHeader[0],
