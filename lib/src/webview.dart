@@ -7,11 +7,11 @@ import 'dart:developer';
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
+import 'package:http/http.dart' as http;
 import 'package:json_annotation/json_annotation.dart';
 
 import 'assets.dart';
@@ -521,37 +521,20 @@ class _Web3WebViewState extends State<Web3WebView> {
         return null;
       }
 
-      final req = RequestOptions(
-        followRedirects: false,
-        method: request.method,
-        path: request.url.toString(),
-        headers: request.headers,
-        responseType: ResponseType.bytes,
-      );
+      final req = http.Request(request.method!, request.url)
+        ..followRedirects = false;
+      req.headers.addAll(request.headers ?? {});
 
-      Response<dynamic> originResp;
+      final originResp = await req.send();
 
-      try {
-        originResp = await Dio().fetch<List<int>>(req);
-      } on DioError catch (e) {
-        if (e.response != null) {
-          originResp = e.response!;
-          // https://developer.android.com/reference/android/webkit/WebResourceResponse 3xx is not supported
-          if (originResp.statusCode != null &&
-              originResp.statusCode! >= 300 &&
-              originResp.statusCode! < 400) {
-            return null;
-          }
-        } else {
-          rethrow;
-        }
+      // https://developer.android.com/reference/android/webkit/WebResourceResponse 3xx is not supported
+      if (originResp.statusCode >= 300 && originResp.statusCode < 400) {
+        return null;
       }
 
-      final contentTypeHeader = (originResp.headers["content-type"] ??
-              originResp.headers["Content-Type"])
-          .toString()
-          .replaceAll("[", "")
-          .replaceAll("]", "")
+      final contentTypeHeader = ((originResp.headers["content-type"] ??
+                  originResp.headers["Content-Type"]) ??
+              '')
           .split(";");
 
       List<String> contentEncoding = [];
@@ -560,25 +543,13 @@ class _Web3WebViewState extends State<Web3WebView> {
         contentEncoding = contentTypeHeader[1].split("=");
       }
 
-      final Map<String, String> headers = {};
-      originResp.headers.map.forEach((key, value) {
-        headers[key] = value.join(";");
-      });
-
-      final Uint8List data =
-          originResp.data.runtimeType.toString() == "List<int>"
-              ? Uint8List.fromList(originResp.data ?? [])
-              : (originResp.data.runtimeType.toString() == "Uint8List"
-                  ? originResp.data
-                  : null);
-
       resp = WebResourceResponse(
         contentType: contentTypeHeader.isEmpty ? '' : contentTypeHeader[0],
         contentEncoding: contentEncoding.length > 1 ? contentEncoding[1] : '',
-        data: data,
-        headers: headers,
+        data: await originResp.stream.toBytes(),
+        headers: originResp.headers,
         statusCode: originResp.statusCode,
-        reasonPhrase: originResp.statusMessage,
+        reasonPhrase: originResp.reasonPhrase,
       );
     }
 

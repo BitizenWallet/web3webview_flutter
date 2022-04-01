@@ -16,7 +16,7 @@ dependencies:
       url: git@github.com:BitizenWallet/flutter_inappwebview.git
       ref: master
   json_annotation: ^4.4.0
-  dio: ^4.0.5
+  http: ^0.13.4
 
 dev_dependencies:
   flutter_test:
