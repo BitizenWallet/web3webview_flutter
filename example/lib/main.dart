@@ -150,8 +150,8 @@ class _MyHomePageState extends State<MyHomePage> {
               //     url: Uri.parse("https://ddg.gg/?q=ethereum+account+balance")),
               // URLRequest(url: Uri.parse("https://pancakeswap.finance/swap")),
               URLRequest(url: Uri.parse("https://app.uniswap.org")),
-          // URLRequest(
-          //     url: Uri.parse("https://bitizenwallet.github.io/test-dapp/")),
+              // URLRequest(
+              //     url: Uri.parse("https://bitizenwallet.github.io/test-dapp/")),
           onWeb3WebViewCreated: _onWeb3WebViewCreated,
           onLoadStop: _onPageFinished,
           shouldOverrideUrlLoading: _shouldOverrideUrlLoading,

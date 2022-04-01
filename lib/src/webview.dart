@@ -157,6 +157,8 @@ class Web3WebViewController {
 
 class Web3WebView extends StatefulWidget {
   final bool? debugEnabled;
+  final bool
+      androidEnableUserScript; // injectScript: enable: async disable: sync
   final Future<Web3RpcResponse> Function(Web3RpcRequest) onRpcRequest;
   final Future<List<String>> Function() onRetriveRpc;
 
@@ -296,7 +298,7 @@ class Web3WebView extends StatefulWidget {
           InAppWebViewController controller, LoginRequest loginRequest)?
       androidOnReceivedLoginRequest;
 
-  const Web3WebView(
+  Web3WebView(
     this.onRpcRequest,
     this.onRetriveRpc, {
     Key? key,
@@ -363,7 +365,14 @@ class Web3WebView extends StatefulWidget {
     this.androidOnJsBeforeUnload,
     this.androidOnReceivedLoginRequest,
     this.debugEnabled,
-  }) : super(key: key);
+    this.androidEnableUserScript = true,
+  }) : super(key: key) {
+    if (androidEnableUserScript) {
+      assert(androidShouldInterceptRequest == null);
+    } else {
+      assert(androidShouldInterceptRequest != null);
+    }
+  }
 
   @override
   State<Web3WebView> createState() => _Web3WebViewState();
@@ -423,7 +432,7 @@ class _Web3WebViewState extends State<Web3WebView> {
     _web3webViewController = Web3WebViewController(widget);
 
     return FutureBuilder(
-        future: Platform.isAndroid
+        future: Platform.isAndroid && !widget.androidEnableUserScript
             ? Future.value(UnmodifiableListView<UserScript>([]))
             : _web3webViewController
                 .getAllUserScript(widget.initialUrlRequest?.url),

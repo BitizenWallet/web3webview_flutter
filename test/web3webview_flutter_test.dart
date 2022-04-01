@@ -4,7 +4,7 @@ import 'package:web3webview_flutter/web3webview_flutter.dart';
 
 void main() {
   test('ok', () {
-    const Web3WebView(_callback, _onRetriveRpc);
+    Web3WebView(_callback, _onRetriveRpc);
   });
 }
 
