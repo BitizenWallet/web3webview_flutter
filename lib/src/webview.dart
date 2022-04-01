@@ -298,7 +298,7 @@ class Web3WebView extends StatefulWidget {
           InAppWebViewController controller, LoginRequest loginRequest)?
       androidOnReceivedLoginRequest;
 
-  Web3WebView(
+  const Web3WebView(
     this.onRpcRequest,
     this.onRetriveRpc, {
     Key? key,
@@ -366,13 +366,7 @@ class Web3WebView extends StatefulWidget {
     this.androidOnReceivedLoginRequest,
     this.debugEnabled,
     this.androidEnableUserScript = true,
-  }) : super(key: key) {
-    if (androidEnableUserScript) {
-      assert(androidShouldInterceptRequest == null);
-    } else {
-      assert(androidShouldInterceptRequest != null);
-    }
-  }
+  }) : super(key: key);
 
   @override
   State<Web3WebView> createState() => _Web3WebViewState();
@@ -449,9 +443,9 @@ class _Web3WebViewState extends State<Web3WebView> {
             initialOptions: initialOptions,
             initialUserScripts:
                 snapshot.data! as UnmodifiableListView<UserScript>,
-            androidShouldInterceptRequest:
-                widget.androidShouldInterceptRequest ??
-                    androidShouldInterceptRequest,
+            androidShouldInterceptRequest: widget.androidEnableUserScript
+                ? widget.androidShouldInterceptRequest
+                : androidShouldInterceptRequest,
             pullToRefreshController: widget.pullToRefreshController,
             contextMenu: widget.contextMenu,
             onLoadStart: widget.onLoadStart,
@@ -519,73 +513,73 @@ class _Web3WebViewState extends State<Web3WebView> {
 
   Future<WebResourceResponse?> androidShouldInterceptRequest(
       InAppWebViewController controller, WebResourceRequest request) async {
-    if (request.method != 'GET') {
-      return null;
-    }
+    WebResourceResponse? resp =
+        await widget.androidShouldInterceptRequest?.call(controller, request);
 
-    final req = RequestOptions(
-      followRedirects: false,
-      method: request.method,
-      path: request.url.toString(),
-      headers: request.headers,
-      responseType: ResponseType.bytes,
-    );
-
-    Response<dynamic> originResp;
-
-    try {
-      originResp = await Dio().fetch<List<int>>(req);
-    } on DioError catch (e) {
-      if (e.response != null) {
-        originResp = e.response!;
-        // https://developer.android.com/reference/android/webkit/WebResourceResponse 3xx is not supported
-        if (originResp.statusCode != null &&
-            originResp.statusCode! >= 300 &&
-            originResp.statusCode! < 400) {
-          return null;
-        }
-      } else {
-        rethrow;
+    if (resp == null) {
+      if (request.method != 'GET') {
+        return null;
       }
-    }
 
-    final contentTypeHeader = (originResp.headers["content-type"] ??
-            originResp.headers["Content-Type"])
-        .toString()
-        .replaceAll("[", "")
-        .replaceAll("]", "")
-        .split(";");
+      final req = RequestOptions(
+        followRedirects: false,
+        method: request.method,
+        path: request.url.toString(),
+        headers: request.headers,
+        responseType: ResponseType.bytes,
+      );
 
-    List<String> contentEncoding = [];
+      Response<dynamic> originResp;
 
-    if (contentTypeHeader.length > 1) {
-      contentEncoding = contentTypeHeader[1].split("=");
-    }
+      try {
+        originResp = await Dio().fetch<List<int>>(req);
+      } on DioError catch (e) {
+        if (e.response != null) {
+          originResp = e.response!;
+          // https://developer.android.com/reference/android/webkit/WebResourceResponse 3xx is not supported
+          if (originResp.statusCode != null &&
+              originResp.statusCode! >= 300 &&
+              originResp.statusCode! < 400) {
+            return null;
+          }
+        } else {
+          rethrow;
+        }
+      }
 
-    final Map<String, String> headers = {};
-    originResp.headers.map.forEach((key, value) {
-      headers[key] = value.join(";");
-    });
+      final contentTypeHeader = (originResp.headers["content-type"] ??
+              originResp.headers["Content-Type"])
+          .toString()
+          .replaceAll("[", "")
+          .replaceAll("]", "")
+          .split(";");
 
-    final Uint8List data = originResp.data.runtimeType.toString() == "List<int>"
-        ? Uint8List.fromList(originResp.data ?? [])
-        : (originResp.data.runtimeType.toString() == "Uint8List"
-            ? originResp.data
-            : null);
+      List<String> contentEncoding = [];
 
-    // log("bingo ${originResp.realUri.toString()} ${originResp.statusCode} ${originResp.statusMessage} ${originResp.isRedirect}");
+      if (contentTypeHeader.length > 1) {
+        contentEncoding = contentTypeHeader[1].split("=");
+      }
 
-    final resp = WebResourceResponse(
-      contentType: contentTypeHeader.isEmpty ? '' : contentTypeHeader[0],
-      contentEncoding: contentEncoding.length > 1 ? contentEncoding[1] : '',
-      data: data,
-      headers: headers,
-      statusCode: originResp.statusCode,
-      reasonPhrase: originResp.statusMessage,
-    );
+      final Map<String, String> headers = {};
+      originResp.headers.map.forEach((key, value) {
+        headers[key] = value.join(";");
+      });
 
-    if (resp.statusCode != 200 || (originResp.isRedirect ?? false)) {
-      return resp;
+      final Uint8List data =
+          originResp.data.runtimeType.toString() == "List<int>"
+              ? Uint8List.fromList(originResp.data ?? [])
+              : (originResp.data.runtimeType.toString() == "Uint8List"
+                  ? originResp.data
+                  : null);
+
+      resp = WebResourceResponse(
+        contentType: contentTypeHeader.isEmpty ? '' : contentTypeHeader[0],
+        contentEncoding: contentEncoding.length > 1 ? contentEncoding[1] : '',
+        data: data,
+        headers: headers,
+        statusCode: originResp.statusCode,
+        reasonPhrase: originResp.statusMessage,
+      );
     }
 
     if (resp.contentType == "text/html") {
