@@ -524,6 +524,8 @@ class _Web3WebViewState extends State<Web3WebView> {
       final req = http.Request(request.method!, request.url)
         ..followRedirects = false;
       req.headers.addAll(request.headers ?? {});
+      req.headers['User-Agent'] =
+          'Mozilla/5.0 (Android 12; Mobile; LG-M255; rv:98.0) Gecko/98.0 Firefox/98.0';
 
       final originResp = await req.send();
 

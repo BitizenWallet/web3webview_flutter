@@ -144,14 +144,13 @@ class _MyHomePageState extends State<MyHomePage> {
               // URLRequest(url: Uri.parse("https://web3-react-mu.vercel.app")),
               // URLRequest(url: Uri.parse("https://web3modal.com")),
               // URLRequest(url: Uri.parse("https://app.sushi.com/en/swap")),
-              // URLRequest(
-              //     url: Uri.parse(
-              //         "https://baidu.com")),
+              // URLRequest(url: Uri.parse("https://baidu.com")),
               // URLRequest(
               //     url: Uri.parse("https://ddg.gg/?q=ethereum+account+balance")),
               // URLRequest(url: Uri.parse("https://pancakeswap.finance/swap")),
               // URLRequest(url: Uri.parse("https://app.uniswap.org")),
               URLRequest(url: Uri.parse("https://opensea.io")),
+          // URLRequest(url: Uri.parse("https://httpbin.org/anything")),
           // URLRequest(
           //     url: Uri.parse("https://bitizenwallet.github.io/test-dapp/")),
           onWeb3WebViewCreated: _onWeb3WebViewCreated,
