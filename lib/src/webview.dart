@@ -117,13 +117,15 @@ class Web3WebViewController {
             'window.ethereum._BitizenEventEmit("accountsChanged", ${jsonEncode(newAccounts)});');
   }
 
-  Future<dynamic> updateRpcUrl(String chainId, String rpcUrl) async {
+  /// updateRpcUrl [list]: `[[chainId, rpcUrl]]`
+  Future<dynamic> updateReadRpcUrls(List<List<String>> list) async {
     await _inAppWebViewController?.removeAllUserScripts();
     await _inAppWebViewController?.addUserScripts(
         userScripts:
             await getAllUserScript(await _inAppWebViewController?.getUrl()));
     return _inAppWebViewController?.evaluateJavascript(
-        source: 'window.ethereum._BitizenUpdateRpcUrl("$chainId", "$rpcUrl");');
+        source:
+            'window.ethereum._BitizenUpdateReadRpcEngines(${jsonEncode(list)});');
   }
 
   Future<UnmodifiableListView<UserScript>> getAllUserScript(Uri? url) async {

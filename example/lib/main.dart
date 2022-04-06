@@ -103,7 +103,9 @@ class _MyHomePageState extends State<MyHomePage> {
     await Future.delayed(const Duration(seconds: 60));
     log("testUpdateRpcUrl");
     _rpc = ["0x${100.toRadixString(16)}", "https://rpc.gnosischain.com"];
-    await _web3WebViewController!.updateRpcUrl(_rpc[0], _rpc[1]);
+    await _web3WebViewController!.updateReadRpcUrls([
+      [_rpc[0], _rpc[1]]
+    ]);
     await _web3WebViewController!
         .emitChainChanged("0x${100.toRadixString(16)}");
     await _web3WebViewController!.emitNetworkChanged(100);
