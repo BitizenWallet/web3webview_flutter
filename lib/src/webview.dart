@@ -515,6 +515,10 @@ class _Web3WebViewState extends State<Web3WebView> {
 
   Future<WebResourceResponse?> androidShouldInterceptRequest(
       InAppWebViewController controller, WebResourceRequest request) async {
+    if (!(request.isForMainFrame ?? false)) {
+      return null;
+    }
+
     WebResourceResponse? resp =
         await widget.androidShouldInterceptRequest?.call(controller, request);
 
