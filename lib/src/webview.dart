@@ -137,12 +137,14 @@ class Web3WebViewController {
     }
     return UnmodifiableListView([
       UserScript(
-          source: injectJs
-              .replaceFirst("#BITIZEN_INJECT#", injectJsBundle)
-              .replaceFirst("#BITIZEN_DEBUG#", debugable ? "√" : "")
-              .replaceFirst("#BITIZEN_CHAINID#", rpc[0])
-              .replaceFirst("#BITIZEN_RPC#", rpc[1]),
-          injectionTime: UserScriptInjectionTime.AT_DOCUMENT_START),
+        source: injectJs
+            .replaceFirst("#BITIZEN_INJECT#", injectJsBundle)
+            .replaceFirst("#BITIZEN_DEBUG#", debugable ? "√" : "")
+            .replaceFirst("#BITIZEN_CHAINID#", rpc[0])
+            .replaceFirst("#BITIZEN_RPC#", rpc[1]),
+        injectionTime: UserScriptInjectionTime.AT_DOCUMENT_START,
+        iosForMainFrameOnly: true,
+      ),
       ...?widget.initialUserScripts,
     ]);
   }
