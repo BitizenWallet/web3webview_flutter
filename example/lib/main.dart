@@ -132,16 +132,10 @@ class _MyHomePageState extends State<MyHomePage> {
           _onRetriveRpc,
           androidEnableUserScript: false,
           initialOptions: InAppWebViewGroupOptions(
-              crossPlatform: InAppWebViewOptions(
-                useShouldOverrideUrlLoading: true,
-                mediaPlaybackRequiresUserGesture: false,
-              ),
-              android: AndroidInAppWebViewOptions(
-                useHybridComposition: true,
-              ),
-              ios: IOSInAppWebViewOptions(
-                allowsInlineMediaPlayback: true,
-              )),
+            crossPlatform: InAppWebViewOptions(
+              useShouldOverrideUrlLoading: true,
+            ),
+          ),
           initialUrlRequest:
               // URLRequest(url: Uri.parse("https://web3-react-mu.vercel.app")),
               // URLRequest(url: Uri.parse("https://web3modal.com")),
@@ -151,7 +145,8 @@ class _MyHomePageState extends State<MyHomePage> {
               //     url: Uri.parse("https://ddg.gg/?q=ethereum+account+balance")),
               // URLRequest(url: Uri.parse("https://pancakeswap.finance/swap")),
               // URLRequest(url: Uri.parse("https://app.uniswap.org")),
-              URLRequest(url: Uri.parse("https://opensea.io")),
+              // URLRequest(url: Uri.parse("https://opensea.io")),
+              URLRequest(url: Uri.parse("https://www.sandbox.game")),
           // URLRequest(url: Uri.parse("https://httpbin.org/anything")),
           // URLRequest(
           //     url: Uri.parse("https://bitizenwallet.github.io/test-dapp/")),

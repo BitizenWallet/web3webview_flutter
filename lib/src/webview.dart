@@ -11,7 +11,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
-import 'package:http/http.dart' as http;
 import 'package:json_annotation/json_annotation.dart';
 
 import 'assets.dart';
@@ -163,6 +162,9 @@ class Web3WebView extends StatefulWidget {
   final bool? debugEnabled;
   final bool
       androidEnableUserScript; // injectScript: enable: async disable: sync
+  // final Future<WebResourceResponse?> Function(
+  //         InAppWebViewController controller, WebResourceRequest request)?
+  //     androidShouldInterceptRequest;
   final Future<Web3RpcResponse> Function(Web3RpcRequest) onRpcRequest;
   final Future<List<String>> Function() onRetriveRpc;
 
@@ -281,9 +283,6 @@ class Web3WebView extends StatefulWidget {
   final void Function(
           InAppWebViewController controller, double oldScale, double newScale)?
       onZoomScaleChanged;
-  final Future<WebResourceResponse?> Function(
-          InAppWebViewController controller, WebResourceRequest request)?
-      androidShouldInterceptRequest;
   final Future<WebViewRenderProcessAction?> Function(
           InAppWebViewController controller, Uri? url)?
       androidOnRenderProcessUnresponsive;
@@ -314,7 +313,6 @@ class Web3WebView extends StatefulWidget {
     this.androidOnGeolocationPermissionsShowPrompt,
     this.androidOnPermissionRequest,
     this.androidOnSafeBrowsingHit,
-    this.androidShouldInterceptRequest,
     this.initialData,
     this.initialFile,
     this.initialOptions,
@@ -447,9 +445,10 @@ class _Web3WebViewState extends State<Web3WebView> {
             initialOptions: initialOptions,
             initialUserScripts:
                 snapshot.data! as UnmodifiableListView<UserScript>,
-            androidShouldInterceptRequest: widget.androidEnableUserScript
-                ? widget.androidShouldInterceptRequest
-                : androidShouldInterceptRequest,
+            // androidShouldInterceptRequest: widget.androidEnableUserScript
+            //     ? widget.androidShouldInterceptRequest
+            //     : androidShouldInterceptRequest,
+            androidShouldInterceptResponse: androidShouldInterceptResponse,
             pullToRefreshController: widget.pullToRefreshController,
             contextMenu: widget.contextMenu,
             onLoadStart: widget.onLoadStart,
@@ -515,57 +514,11 @@ class _Web3WebViewState extends State<Web3WebView> {
         });
   }
 
-  Future<WebResourceResponse?> androidShouldInterceptRequest(
-      InAppWebViewController controller, WebResourceRequest request) async {
-    if (!(request.isForMainFrame ?? false)) {
-      return null;
-    }
-
-    WebResourceResponse? resp =
-        await widget.androidShouldInterceptRequest?.call(controller, request);
-
-    if (resp == null) {
-      if (request.method != 'GET') {
-        return null;
-      }
-
-      final req = http.Request(request.method!, request.url)
-        ..followRedirects = false;
-      req.headers.addAll(request.headers ?? {});
-      req.headers['User-Agent'] =
-          'Mozilla/5.0 (Android 12; Mobile; LG-M255; rv:98.0) Gecko/98.0 Firefox/98.0';
-
-      final originResp = await req.send();
-
-      // https://developer.android.com/reference/android/webkit/WebResourceResponse 3xx is not supported
-      if (originResp.statusCode >= 300 && originResp.statusCode < 400) {
-        return null;
-      }
-
-      final contentTypeHeader = ((originResp.headers["content-type"] ??
-                  originResp.headers["Content-Type"]) ??
-              '')
-          .split(";");
-
-      List<String> contentEncoding = [];
-
-      if (contentTypeHeader.length > 1) {
-        contentEncoding = contentTypeHeader[1].split("=");
-      }
-
-      resp = WebResourceResponse(
-        contentType: contentTypeHeader.isEmpty ? '' : contentTypeHeader[0],
-        contentEncoding: contentEncoding.length > 1 ? contentEncoding[1] : '',
-        data: await originResp.stream.toBytes(),
-        headers: originResp.headers,
-        statusCode: originResp.statusCode,
-        reasonPhrase: originResp.reasonPhrase,
-      );
-    }
-
+  Future<WebResourceResponse?> androidShouldInterceptResponse(
+      InAppWebViewController controller, WebResourceResponse resp) async {
     if (resp.contentType == "text/html") {
       final allUserScripts =
-          await _web3webViewController.getAllUserScript(request.url);
+          await _web3webViewController.getAllUserScript(Uri.parse(resp.url!));
 
       String userScriptInject = "";
       for (var s in allUserScripts) {
@@ -582,10 +535,154 @@ class _Web3WebViewState extends State<Web3WebView> {
       }
     }
 
+    if (resp.statusCode == null) {
+      resp.statusCode = 200;
+      resp.reasonPhrase = 'Status OK';
+    }
+
     if (widget.debugEnabled ?? false) {
-      log("web3webview_flutter androidShouldInterceptRequest ${resp.contentType} ${request.url.toString()}");
+      log("web3webview_flutter androidShouldInterceptResponse ${resp.contentType} ${resp.url.toString()}");
     }
 
     return resp;
   }
+
+  // Future<WebResourceResponse?> androidShouldInterceptRequest(
+  //     InAppWebViewController controller, WebResourceRequest request) async {
+  //   if (!(request.isForMainFrame ?? false)) {
+  //     return null;
+  //   }
+
+  //   WebResourceResponse? resp = await (widget.androidShouldInterceptRequest
+  //           ?.call(controller, request) ??
+  //       _httpGetResponse(request));
+
+  //   if (resp == null) {
+  //     return null;
+  //   }
+
+  //   if (resp.contentType == "text/html") {
+  //     final allUserScripts =
+  //         await _web3webViewController.getAllUserScript(request.url);
+
+  //     String userScriptInject = "";
+  //     for (var s in allUserScripts) {
+  //       userScriptInject += "<script>${s.source}</script>";
+  //     }
+
+  //     final body = String.fromCharCodes(resp.data ?? []);
+  //     if (body.contains("<head>")) {
+  //       resp.data = Uint8List.fromList(
+  //           body.replaceFirst("<head>", "<head>" + userScriptInject).codeUnits);
+  //     } else if (body.contains("<body>")) {
+  //       resp.data = Uint8List.fromList(
+  //           body.replaceFirst("<body>", "<body>" + userScriptInject).codeUnits);
+  //     }
+  //   }
+
+  //   if (widget.debugEnabled ?? false) {
+  //     log("web3webview_flutter androidShouldInterceptRequest ${resp.contentType} ${request.url.toString()}");
+  //   }
+
+  //   return resp;
+  // }
+
+  // Future<WebResourceResponse?> _httpGetResponse(
+  //     WebResourceRequest request) async {
+  //   if (request.method != 'GET') {
+  //     return null;
+  //   }
+  //   final req = http.Request(request.method!, request.url)
+  //     ..followRedirects = false;
+  //   req.headers.addAll(request.headers ?? {});
+
+  //   final originResp = await req.send();
+
+  //   // https://developer.android.com/reference/android/webkit/WebResourceResponse 3xx is not supported
+  //   if (originResp.statusCode >= 300 && originResp.statusCode < 400) {
+  //     return null;
+  //   }
+
+  //   final contentTypeHeader = ((originResp.headers["content-type"] ??
+  //               originResp.headers["Content-Type"]) ??
+  //           '')
+  //       .split(";");
+
+  //   List<String> contentEncoding = [];
+
+  //   if (contentTypeHeader.length > 1) {
+  //     contentEncoding = contentTypeHeader[1].split("=");
+  //   }
+
+  //   return WebResourceResponse(
+  //     contentType: contentTypeHeader.isEmpty ? '' : contentTypeHeader[0],
+  //     contentEncoding: contentEncoding.length > 1 ? contentEncoding[1] : '',
+  //     data: await originResp.stream.toBytes(),
+  //     headers: originResp.headers,
+  //     statusCode: originResp.statusCode,
+  //     reasonPhrase: originResp.reasonPhrase,
+  //   );
+  // }
+
+  // Future<WebResourceResponse?> _dioGetResponse(
+  //     WebResourceRequest request) async {
+  //   final req = RequestOptions(
+  //     followRedirects: false,
+  //     method: request.method,
+  //     path: request.url.toString(),
+  //     headers: request.headers,
+  //     responseType: ResponseType.bytes,
+  //   );
+
+  //   Response<dynamic> originResp;
+
+  //   try {
+  //     originResp = await Dio().fetch<List<int>>(req);
+  //   } on DioError catch (e) {
+  //     if (e.response != null) {
+  //       originResp = e.response!;
+  //       // https://developer.android.com/reference/android/webkit/WebResourceResponse 3xx is not supported
+  //       if (originResp.statusCode != null &&
+  //           originResp.statusCode! >= 300 &&
+  //           originResp.statusCode! < 400) {
+  //         return null;
+  //       }
+  //     } else {
+  //       rethrow;
+  //     }
+  //   }
+
+  //   final contentTypeHeader = (originResp.headers["content-type"] ??
+  //           originResp.headers["Content-Type"])
+  //       .toString()
+  //       .replaceAll("[", "")
+  //       .replaceAll("]", "")
+  //       .split(";");
+
+  //   List<String> contentEncoding = [];
+
+  //   if (contentTypeHeader.length > 1) {
+  //     contentEncoding = contentTypeHeader[1].split("=");
+  //   }
+
+  //   final Map<String, String> headers = {};
+  //   originResp.headers.map.forEach((key, value) {
+  //     headers[key] = value.join(";");
+  //   });
+
+  //   final Uint8List data = originResp.data.runtimeType.toString() == "List<int>"
+  //       ? Uint8List.fromList(originResp.data ?? [])
+  //       : (originResp.data.runtimeType.toString() == "Uint8List"
+  //           ? originResp.data
+  //           : null);
+
+  //   return WebResourceResponse(
+  //     contentType: contentTypeHeader.isEmpty ? '' : contentTypeHeader[0],
+  //     contentEncoding: contentEncoding.length > 1 ? contentEncoding[1] : '',
+  //     data: data,
+  //     headers: headers,
+  //     statusCode: originResp.statusCode,
+  //     reasonPhrase: originResp.statusMessage,
+  //   );
+  // }
 }

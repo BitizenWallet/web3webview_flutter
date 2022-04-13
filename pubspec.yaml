@@ -1,6 +1,6 @@
 name: web3webview_flutter
 description: A new Flutter package project.
-version: 0.0.44
+version: 0.0.45
 homepage:
 publish_to: "none"
 
@@ -12,11 +12,13 @@ dependencies:
   flutter:
     sdk: flutter
   flutter_inappwebview:
+    # path: ../../Downloads/flutter_inappwebview
     git:
       url: git@github.com:BitizenWallet/flutter_inappwebview.git
       ref: master
   json_annotation: ^4.4.0
   http: ^0.13.4
+  # dio: ^4.0.6
 
 dev_dependencies:
   flutter_test:
