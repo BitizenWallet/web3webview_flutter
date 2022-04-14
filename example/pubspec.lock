@@ -67,10 +67,10 @@ packages:
     description:
       path: "."
       ref: master
-      resolved-ref: "860ad20504ed9a687ae814d615277c8ac2573819"
+      resolved-ref: "38bac88cba0b8e5950ef6ac447928b3f85c5d79b"
       url: "git@github.com:BitizenWallet/flutter_inappwebview.git"
     source: git
-    version: "5.3.12"
+    version: "5.3.16"
   flutter_lints:
     dependency: "direct dev"
     description:
