@@ -226,8 +226,6 @@ class Web3WebView extends StatefulWidget {
   final void Function(
           InAppWebViewController controller, Uri url, bool precomposed)?
       androidOnReceivedTouchIconUrl;
-  final void Function(InAppWebViewController controller, Uri url)?
-      onDownloadStart;
   final void Function(InAppWebViewController controller, int activeMatchOrdinal,
       int numberOfMatches, bool isDoneCounting)? onFindResultReceived;
   final Future<JsAlertResponse?> Function(
@@ -334,7 +332,6 @@ class Web3WebView extends StatefulWidget {
     this.onWindowBlur,
     this.androidOnReceivedIcon,
     this.androidOnReceivedTouchIconUrl,
-    this.onDownloadStart,
     this.onFindResultReceived,
     this.onJsAlert,
     this.onJsConfirm,
@@ -460,7 +457,6 @@ class _Web3WebViewState extends State<Web3WebView> {
             shouldOverrideUrlLoading: widget.shouldOverrideUrlLoading,
             onLoadResource: widget.onLoadResource,
             onScrollChanged: widget.onScrollChanged,
-            onDownloadStart: widget.onDownloadStart,
             onLoadResourceCustomScheme: widget.onLoadResourceCustomScheme,
             onCreateWindow: widget.onCreateWindow,
             onCloseWindow: widget.onCloseWindow,
@@ -546,143 +542,4 @@ class _Web3WebViewState extends State<Web3WebView> {
 
     return resp;
   }
-
-  // Future<WebResourceResponse?> androidShouldInterceptRequest(
-  //     InAppWebViewController controller, WebResourceRequest request) async {
-  //   if (!(request.isForMainFrame ?? false)) {
-  //     return null;
-  //   }
-
-  //   WebResourceResponse? resp = await (widget.androidShouldInterceptRequest
-  //           ?.call(controller, request) ??
-  //       _httpGetResponse(request));
-
-  //   if (resp == null) {
-  //     return null;
-  //   }
-
-  //   if (resp.contentType == "text/html") {
-  //     final allUserScripts =
-  //         await _web3webViewController.getAllUserScript(request.url);
-
-  //     String userScriptInject = "";
-  //     for (var s in allUserScripts) {
-  //       userScriptInject += "<script>${s.source}</script>";
-  //     }
-
-  //     final body = String.fromCharCodes(resp.data ?? []);
-  //     if (body.contains("<head>")) {
-  //       resp.data = Uint8List.fromList(
-  //           body.replaceFirst("<head>", "<head>" + userScriptInject).codeUnits);
-  //     } else if (body.contains("<body>")) {
-  //       resp.data = Uint8List.fromList(
-  //           body.replaceFirst("<body>", "<body>" + userScriptInject).codeUnits);
-  //     }
-  //   }
-
-  //   if (widget.debugEnabled ?? false) {
-  //     log("web3webview_flutter androidShouldInterceptRequest ${resp.contentType} ${request.url.toString()}");
-  //   }
-
-  //   return resp;
-  // }
-
-  // Future<WebResourceResponse?> _httpGetResponse(
-  //     WebResourceRequest request) async {
-  //   if (request.method != 'GET') {
-  //     return null;
-  //   }
-  //   final req = http.Request(request.method!, request.url)
-  //     ..followRedirects = false;
-  //   req.headers.addAll(request.headers ?? {});
-
-  //   final originResp = await req.send();
-
-  //   // https://developer.android.com/reference/android/webkit/WebResourceResponse 3xx is not supported
-  //   if (originResp.statusCode >= 300 && originResp.statusCode < 400) {
-  //     return null;
-  //   }
-
-  //   final contentTypeHeader = ((originResp.headers["content-type"] ??
-  //               originResp.headers["Content-Type"]) ??
-  //           '')
-  //       .split(";");
-
-  //   List<String> contentEncoding = [];
-
-  //   if (contentTypeHeader.length > 1) {
-  //     contentEncoding = contentTypeHeader[1].split("=");
-  //   }
-
-  //   return WebResourceResponse(
-  //     contentType: contentTypeHeader.isEmpty ? '' : contentTypeHeader[0],
-  //     contentEncoding: contentEncoding.length > 1 ? contentEncoding[1] : '',
-  //     data: await originResp.stream.toBytes(),
-  //     headers: originResp.headers,
-  //     statusCode: originResp.statusCode,
-  //     reasonPhrase: originResp.reasonPhrase,
-  //   );
-  // }
-
-  // Future<WebResourceResponse?> _dioGetResponse(
-  //     WebResourceRequest request) async {
-  //   final req = RequestOptions(
-  //     followRedirects: false,
-  //     method: request.method,
-  //     path: request.url.toString(),
-  //     headers: request.headers,
-  //     responseType: ResponseType.bytes,
-  //   );
-
-  //   Response<dynamic> originResp;
-
-  //   try {
-  //     originResp = await Dio().fetch<List<int>>(req);
-  //   } on DioError catch (e) {
-  //     if (e.response != null) {
-  //       originResp = e.response!;
-  //       // https://developer.android.com/reference/android/webkit/WebResourceResponse 3xx is not supported
-  //       if (originResp.statusCode != null &&
-  //           originResp.statusCode! >= 300 &&
-  //           originResp.statusCode! < 400) {
-  //         return null;
-  //       }
-  //     } else {
-  //       rethrow;
-  //     }
-  //   }
-
-  //   final contentTypeHeader = (originResp.headers["content-type"] ??
-  //           originResp.headers["Content-Type"])
-  //       .toString()
-  //       .replaceAll("[", "")
-  //       .replaceAll("]", "")
-  //       .split(";");
-
-  //   List<String> contentEncoding = [];
-
-  //   if (contentTypeHeader.length > 1) {
-  //     contentEncoding = contentTypeHeader[1].split("=");
-  //   }
-
-  //   final Map<String, String> headers = {};
-  //   originResp.headers.map.forEach((key, value) {
-  //     headers[key] = value.join(";");
-  //   });
-
-  //   final Uint8List data = originResp.data.runtimeType.toString() == "List<int>"
-  //       ? Uint8List.fromList(originResp.data ?? [])
-  //       : (originResp.data.runtimeType.toString() == "Uint8List"
-  //           ? originResp.data
-  //           : null);
-
-  //   return WebResourceResponse(
-  //     contentType: contentTypeHeader.isEmpty ? '' : contentTypeHeader[0],
-  //     contentEncoding: contentEncoding.length > 1 ? contentEncoding[1] : '',
-  //     data: data,
-  //     headers: headers,
-  //     statusCode: originResp.statusCode,
-  //     reasonPhrase: originResp.statusMessage,
-  //   );
-  // }
 }

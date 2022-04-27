@@ -134,6 +134,15 @@ class _MyHomePageState extends State<MyHomePage> {
           initialOptions: InAppWebViewGroupOptions(
             crossPlatform: InAppWebViewOptions(
               useShouldOverrideUrlLoading: true,
+              mediaPlaybackRequiresUserGesture: false,
+            ),
+            android: AndroidInAppWebViewOptions(
+              useHybridComposition:
+                  true, // 解决 https://github.com/flutter/flutter/issues/90207
+              supportMultipleWindows: true,
+            ),
+            ios: IOSInAppWebViewOptions(
+              allowsInlineMediaPlayback: true,
             ),
           ),
           initialUrlRequest:
@@ -144,9 +153,9 @@ class _MyHomePageState extends State<MyHomePage> {
               // URLRequest(
               //     url: Uri.parse("https://ddg.gg/?q=ethereum+account+balance")),
               // URLRequest(url: Uri.parse("https://pancakeswap.finance/swap")),
-              // URLRequest(url: Uri.parse("https://app.uniswap.org")),
-              // URLRequest(url: Uri.parse("https://opensea.io")),
-              URLRequest(url: Uri.parse("https://www.sandbox.game")),
+              URLRequest(url: Uri.parse("https://app.uniswap.org")),
+          // URLRequest(url: Uri.parse("https://opensea.io")),
+          // URLRequest(url: Uri.parse("https://www.sandbox.game")),
           // URLRequest(url: Uri.parse("https://httpbin.org/anything")),
           // URLRequest(
           //     url: Uri.parse("https://bitizenwallet.github.io/test-dapp/")),
