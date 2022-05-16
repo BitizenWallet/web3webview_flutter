@@ -113,7 +113,7 @@ class Web3WebViewController {
   Future<dynamic> emitAccountsChanged(List<String> newAccounts) async {
     return _inAppWebViewController?.evaluateJavascript(
         source:
-            'window.ethereum._BitizenEventEmit("accountsChanged", ${jsonEncode(newAccounts)});');
+            'window.ethereum._BitizenEventEmit("accountsChanged", [${jsonEncode(newAccounts)}]);');
   }
 
   /// updateRpcUrl [list]: `[[chainId, rpcUrl]]`
