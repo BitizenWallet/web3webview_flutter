@@ -68,6 +68,10 @@ class Web3WebViewController {
         screenshotConfiguration: screenshotConfiguration);
   }
 
+  Future<Uri?> getUrl() async {
+    return _inAppWebViewController?.getUrl();
+  }
+
   Future<void> goBack() async {
     return _inAppWebViewController?.goBack();
   }
