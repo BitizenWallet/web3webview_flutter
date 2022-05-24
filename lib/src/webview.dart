@@ -387,6 +387,14 @@ class _Web3WebViewState extends State<Web3WebView> {
     }
   }
 
+  @override
+  dispose() {
+    super.dispose();
+    if (widget.debugEnabled ?? false) {
+      log("web3webview_flutter Web3WebView dispose url:${widget.initialUrlRequest?.url}");
+    }
+  }
+
   _onWeb3WebViewCreated(InAppWebViewController controller) async {
     if (widget.debugEnabled ?? false) {
       log("web3webview_flutter _onWeb3WebViewCreated $controller");
