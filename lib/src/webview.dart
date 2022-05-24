@@ -52,81 +52,81 @@ class Web3RpcResponse {
 }
 
 class Web3WebViewController {
-  InAppWebViewController? _inAppWebViewController;
+  InAppWebViewController? inAppWebViewController;
   Web3WebView widget;
 
   Web3WebViewController(
     this.widget, {
     InAppWebViewController? inAppWebViewController,
   }) {
-    _inAppWebViewController = inAppWebViewController;
+    inAppWebViewController = inAppWebViewController;
   }
 
   Future<Uint8List?> takeScreenshot(
       {ScreenshotConfiguration? screenshotConfiguration}) async {
-    return _inAppWebViewController?.takeScreenshot(
+    return inAppWebViewController?.takeScreenshot(
         screenshotConfiguration: screenshotConfiguration);
   }
 
   Future<Uri?> getUrl() async {
-    return _inAppWebViewController?.getUrl();
+    return inAppWebViewController?.getUrl();
   }
 
   Future<void> goBack() async {
-    return _inAppWebViewController?.goBack();
+    return inAppWebViewController?.goBack();
   }
 
   Future<void> goForward() async {
-    return _inAppWebViewController?.goForward();
+    return inAppWebViewController?.goForward();
   }
 
   Future<void> loadUrl(URLRequest req) async {
-    return _inAppWebViewController?.loadUrl(urlRequest: req);
+    return inAppWebViewController?.loadUrl(urlRequest: req);
   }
 
   Future<bool?> canGoBack() async {
-    return _inAppWebViewController?.canGoBack();
+    return inAppWebViewController?.canGoBack();
   }
 
   Future<dynamic> emitEvent(String topic, List<dynamic> args) async {
-    return _inAppWebViewController?.evaluateJavascript(
+    return inAppWebViewController?.evaluateJavascript(
         source:
             'window.ethereum._BitizenEventEmit("$topic", "${jsonEncode(args)}");');
   }
 
   Future<dynamic> emitChainChanged(String newChainId) async {
     assert(newChainId.startsWith("0x"));
-    return _inAppWebViewController?.evaluateJavascript(
+    return inAppWebViewController?.evaluateJavascript(
         source:
             'window.ethereum._BitizenEventEmit("chainChanged", ["$newChainId"]);');
   }
 
   Future<dynamic> emitNetworkChanged(int networkId) async {
-    return _inAppWebViewController?.evaluateJavascript(
+    return inAppWebViewController?.evaluateJavascript(
         source:
             'window.ethereum._BitizenEventEmit("networkChanged", [$networkId]);');
   }
 
   Future<dynamic> emitConnect(String chainId) async {
     assert(chainId.startsWith("0x"));
-    return _inAppWebViewController?.evaluateJavascript(
+    return inAppWebViewController?.evaluateJavascript(
         source:
             'window.ethereum._BitizenEventEmit("connect", [{"chainId": "$chainId"}]);');
   }
 
   Future<dynamic> emitAccountsChanged(List<String> newAccounts) async {
-    return _inAppWebViewController?.evaluateJavascript(
+    return inAppWebViewController?.evaluateJavascript(
         source:
             'window.ethereum._BitizenEventEmit("accountsChanged", [${jsonEncode(newAccounts)}]);');
   }
 
   /// updateRpcUrl [list]: `[[chainId, rpcUrl]]`
   Future<dynamic> updateReadRpcUrls(List<List<String>> list) async {
-    await _inAppWebViewController?.removeAllUserScripts();
-    await _inAppWebViewController?.addUserScripts(
+    await inAppWebViewController?.removeAllUserScripts();
+    await inAppWebViewController?.addUserScripts(
         userScripts:
-            await getAllUserScript(await _inAppWebViewController?.getUrl()));
-    return _inAppWebViewController?.evaluateJavascript(
+            await getAllUserScript(await inAppWebViewController?.getUrl()));
+    return inAppWebViewController?.evaluateJavascript(
         source:
             'window.ethereum._BitizenUpdateReadRpcEngines(${jsonEncode(list)});');
   }
@@ -154,10 +154,10 @@ class Web3WebViewController {
 
   Future<void> reload() async {
     return Platform.isAndroid
-        ? _inAppWebViewController?.reload()
-        : _inAppWebViewController?.loadUrl(
+        ? inAppWebViewController?.reload()
+        : inAppWebViewController?.loadUrl(
             urlRequest: URLRequest(
-                url: await _inAppWebViewController?.getUrl() ??
+                url: await inAppWebViewController?.getUrl() ??
                     widget.initialUrlRequest!.url!));
   }
 }
@@ -399,7 +399,7 @@ class _Web3WebViewState extends State<Web3WebView> {
     if (widget.debugEnabled ?? false) {
       log("web3webview_flutter _onWeb3WebViewCreated $controller");
     }
-    _web3webViewController._inAppWebViewController = controller;
+    _web3webViewController.inAppWebViewController = controller;
 
     controller.addJavaScriptHandler(
         handlerName: "BitizenRpcRequest", callback: _bitizenRpcRequest);
