@@ -429,7 +429,11 @@ class _Web3WebViewState extends State<Web3WebView> {
 
     if (Platform.isAndroid) {
       initialOptions = widget.initialOptions ?? InAppWebViewGroupOptions();
-      initialOptions!.android.useShouldInterceptRequest = true;
+      if (initialOptions!.android.useShouldInterceptRequest &&
+          initialOptions!.android.useShouldInterceptResponse) {
+        throw Exception(
+            "useShouldInterceptRequest and useShouldInterceptResponse cannot be both true!");
+      }
     } else {
       initialOptions = widget.initialOptions;
     }
