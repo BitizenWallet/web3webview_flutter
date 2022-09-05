@@ -5,7 +5,6 @@ import 'dart:collection';
 import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
@@ -429,11 +428,8 @@ class _Web3WebViewState extends State<Web3WebView> {
 
     if (Platform.isAndroid) {
       initialOptions = widget.initialOptions ?? InAppWebViewGroupOptions();
-      if (initialOptions!.android.useShouldInterceptRequest &&
-          initialOptions!.android.useShouldInterceptResponse) {
-        throw Exception(
-            "useShouldInterceptRequest and useShouldInterceptResponse cannot be both true!");
-      }
+      initialOptions!.android.useShouldInterceptRequest = false;
+      initialOptions!.android.useShouldInterceptResponse = true;
     } else {
       initialOptions = widget.initialOptions;
     }
