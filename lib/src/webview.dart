@@ -353,8 +353,10 @@ class _Web3WebViewState extends State<Web3WebView> {
 
     if (Platform.isAndroid) {
       initialSettings = widget.initialSettings ?? InAppWebViewSettings();
-      initialSettings!.useShouldInterceptRequest = false;
-      initialSettings!.useShouldInterceptResponse = true;
+      if (!widget.androidEnableUserScript) {
+        initialSettings!.useShouldInterceptRequest = false;
+        initialSettings!.useShouldInterceptResponse = true;
+      }
     } else {
       initialSettings = widget.initialSettings;
     }
@@ -380,7 +382,9 @@ class _Web3WebViewState extends State<Web3WebView> {
             // androidShouldInterceptRequest: widget.androidEnableUserScript
             //     ? widget.androidShouldInterceptRequest
             //     : androidShouldInterceptRequest,
-            shouldInterceptResponse: androidShouldInterceptResponse,
+            shouldInterceptResponse: widget.androidEnableUserScript
+                ? null
+                : androidShouldInterceptResponse,
             pullToRefreshController: widget.pullToRefreshController,
             contextMenu: widget.contextMenu,
             onLoadStart: widget.onLoadStart,
