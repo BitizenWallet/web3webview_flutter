@@ -67,10 +67,17 @@ packages:
     description:
       path: "."
       ref: master
-      resolved-ref: "9ce3d777e2e7384968bdf6f3e5c854b35ef1740f"
+      resolved-ref: "77390f0e6703638884c558e7c57f6089fd49ea53"
       url: "git@github.com:BitizenWallet/flutter_inappwebview.git"
     source: git
-    version: "5.4.3+7"
+    version: "6.0.0-beta.22"
+  flutter_inappwebview_internal_annotations:
+    dependency: transitive
+    description:
+      name: flutter_inappwebview_internal_annotations
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "1.1.0"
   flutter_lints:
     dependency: "direct dev"
     description:
@@ -281,7 +288,7 @@ packages:
       path: ".."
       relative: true
     source: path
-    version: "0.1.8"
+    version: "0.1.9"
   webview_flutter:
     dependency: "direct main"
     description:
@@ -312,4 +319,4 @@ packages:
     version: "2.7.2"
 sdks:
   dart: ">=2.17.0-0 <3.0.0"
-  flutter: ">=2.10.0"
+  flutter: ">=3.0.0"

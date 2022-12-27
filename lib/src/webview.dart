@@ -145,7 +145,7 @@ class Web3WebViewController {
             .replaceFirst("#BITIZEN_CHAINID#", rpc[0])
             .replaceFirst("#BITIZEN_RPC#", rpc[1]),
         injectionTime: UserScriptInjectionTime.AT_DOCUMENT_START,
-        iosForMainFrameOnly: true,
+        forMainFrameOnly: true,
       ),
       ...?widget.initialUserScripts,
     ]);
@@ -177,22 +177,7 @@ class Web3WebView extends StatefulWidget {
   final Set<Factory<OneSequenceGestureRecognizer>>? gestureRecognizers;
   final int? windowId;
 
-  final void Function(InAppWebViewController controller)?
-      androidOnGeolocationPermissionsHidePrompt;
-  final Future<GeolocationPermissionShowPromptResponse?> Function(
-          InAppWebViewController controller, String origin)?
-      androidOnGeolocationPermissionsShowPrompt;
-  final Future<PermissionRequestResponse?> Function(
-      InAppWebViewController controller,
-      String origin,
-      List<String> resources)? androidOnPermissionRequest;
-  final Future<SafeBrowsingResponse?> Function(
-      InAppWebViewController controller,
-      Uri url,
-      SafeBrowsingThreat? threatType)? androidOnSafeBrowsingHit;
-  final InAppWebViewInitialData? initialData;
-  final String? initialFile;
-  final InAppWebViewGroupOptions? initialOptions;
+  final InAppWebViewSettings? initialSettings;
   final UnmodifiableListView<UserScript>? initialUserScripts;
   final PullToRefreshController? pullToRefreshController;
   final ContextMenu? contextMenu;
@@ -200,16 +185,6 @@ class Web3WebView extends StatefulWidget {
       onPageCommitVisible;
   final void Function(InAppWebViewController controller, String? title)?
       onTitleChanged;
-  final void Function(InAppWebViewController controller)?
-      iosOnDidReceiveServerRedirectForProvisionalNavigation;
-  final void Function(InAppWebViewController controller)?
-      iosOnWebContentProcessDidTerminate;
-  final Future<IOSNavigationResponseAction?> Function(
-      InAppWebViewController controller,
-      IOSWKNavigationResponse navigationResponse)? iosOnNavigationResponse;
-  final Future<IOSShouldAllowDeprecatedTLSAction?> Function(
-      InAppWebViewController controller,
-      URLAuthenticationChallenge challenge)? iosShouldAllowDeprecatedTLS;
   final Future<AjaxRequestAction> Function(
           InAppWebViewController controller, AjaxRequest ajaxRequest)?
       onAjaxProgress;
@@ -224,13 +199,6 @@ class Web3WebView extends StatefulWidget {
   final void Function(InAppWebViewController controller)? onCloseWindow;
   final void Function(InAppWebViewController controller)? onWindowFocus;
   final void Function(InAppWebViewController controller)? onWindowBlur;
-  final void Function(InAppWebViewController controller, Uint8List icon)?
-      androidOnReceivedIcon;
-  final void Function(
-          InAppWebViewController controller, Uri url, bool precomposed)?
-      androidOnReceivedTouchIconUrl;
-  final void Function(InAppWebViewController controller, int activeMatchOrdinal,
-      int numberOfMatches, bool isDoneCounting)? onFindResultReceived;
   final Future<JsAlertResponse?> Function(
           InAppWebViewController controller, JsAlertRequest jsAlertRequest)?
       onJsAlert;
@@ -240,20 +208,19 @@ class Web3WebView extends StatefulWidget {
   final Future<JsPromptResponse?> Function(
           InAppWebViewController controller, JsPromptRequest jsPromptRequest)?
       onJsPrompt;
-  final void Function(InAppWebViewController controller, Uri? url, int code,
-      String message)? onLoadError;
-  final void Function(InAppWebViewController controller, Uri? url,
-      int statusCode, String description)? onLoadHttpError;
+  final void Function(
+          InAppWebViewController, WebResourceRequest, WebResourceError)?
+      onReceivedError;
+  final void Function(
+          InAppWebViewController, WebResourceRequest, WebResourceResponse)?
+      onReceivedHttpError;
   final void Function(
           InAppWebViewController controller, LoadedResource resource)?
       onLoadResource;
-  final Future<CustomSchemeResponse?> Function(
-      InAppWebViewController controller, Uri url)? onLoadResourceCustomScheme;
   final void Function(InAppWebViewController controller, Uri? url)? onLoadStart;
   final void Function(InAppWebViewController controller, Uri? url)? onLoadStop;
   final void Function(InAppWebViewController controller,
       InAppWebViewHitTestResult hitTestResult)? onLongPressHitTestResult;
-  final void Function(InAppWebViewController controller, Uri? url)? onPrint;
   final void Function(InAppWebViewController controller, int progress)?
       onProgressChanged;
   final Future<ClientCertResponse?> Function(InAppWebViewController controller,
@@ -281,26 +248,6 @@ class Web3WebView extends StatefulWidget {
   final void Function(InAppWebViewController controller)? onExitFullscreen;
   final void Function(InAppWebViewController controller, int x, int y,
       bool clampedX, bool clampedY)? onOverScrolled;
-  final void Function(
-          InAppWebViewController controller, double oldScale, double newScale)?
-      onZoomScaleChanged;
-  final Future<WebViewRenderProcessAction?> Function(
-          InAppWebViewController controller, Uri? url)?
-      androidOnRenderProcessUnresponsive;
-  final Future<WebViewRenderProcessAction?> Function(
-          InAppWebViewController controller, Uri? url)?
-      androidOnRenderProcessResponsive;
-  final void Function(
-          InAppWebViewController controller, RenderProcessGoneDetail detail)?
-      androidOnRenderProcessGone;
-  final Future<FormResubmissionAction?> Function(
-      InAppWebViewController controller, Uri? url)? androidOnFormResubmission;
-  final Future<JsBeforeUnloadResponse?> Function(
-      InAppWebViewController controller,
-      JsBeforeUnloadRequest jsBeforeUnloadRequest)? androidOnJsBeforeUnload;
-  final void Function(
-          InAppWebViewController controller, LoginRequest loginRequest)?
-      androidOnReceivedLoginRequest;
 
   const Web3WebView(
     this.onRpcRequest,
@@ -310,22 +257,12 @@ class Web3WebView extends StatefulWidget {
     this.initialUrlRequest,
     this.gestureRecognizers,
     this.windowId,
-    this.androidOnGeolocationPermissionsHidePrompt,
-    this.androidOnGeolocationPermissionsShowPrompt,
-    this.androidOnPermissionRequest,
-    this.androidOnSafeBrowsingHit,
-    this.initialData,
-    this.initialFile,
-    this.initialOptions,
+    this.initialSettings,
     this.initialUserScripts,
     this.pullToRefreshController,
     this.contextMenu,
     this.onPageCommitVisible,
     this.onTitleChanged,
-    this.iosOnDidReceiveServerRedirectForProvisionalNavigation,
-    this.iosOnWebContentProcessDidTerminate,
-    this.iosOnNavigationResponse,
-    this.iosShouldAllowDeprecatedTLS,
     this.onAjaxProgress,
     this.onAjaxReadyStateChange,
     this.onConsoleMessage,
@@ -333,20 +270,15 @@ class Web3WebView extends StatefulWidget {
     this.onCloseWindow,
     this.onWindowFocus,
     this.onWindowBlur,
-    this.androidOnReceivedIcon,
-    this.androidOnReceivedTouchIconUrl,
-    this.onFindResultReceived,
     this.onJsAlert,
     this.onJsConfirm,
     this.onJsPrompt,
-    this.onLoadError,
-    this.onLoadHttpError,
+    this.onReceivedError,
+    this.onReceivedHttpError,
     this.onLoadResource,
-    this.onLoadResourceCustomScheme,
     this.onLoadStart,
     this.onLoadStop,
     this.onLongPressHitTestResult,
-    this.onPrint,
     this.onProgressChanged,
     this.onReceivedClientCertRequest,
     this.onReceivedHttpAuthRequest,
@@ -359,13 +291,6 @@ class Web3WebView extends StatefulWidget {
     this.onEnterFullscreen,
     this.onExitFullscreen,
     this.onOverScrolled,
-    this.onZoomScaleChanged,
-    this.androidOnRenderProcessUnresponsive,
-    this.androidOnRenderProcessResponsive,
-    this.androidOnRenderProcessGone,
-    this.androidOnFormResubmission,
-    this.androidOnJsBeforeUnload,
-    this.androidOnReceivedLoginRequest,
     this.debugEnabled,
     this.androidEnableUserScript = true,
   }) : super(key: key);
@@ -375,7 +300,7 @@ class Web3WebView extends StatefulWidget {
 }
 
 class _Web3WebViewState extends State<Web3WebView> {
-  InAppWebViewGroupOptions? initialOptions;
+  InAppWebViewSettings? initialSettings;
   late Web3WebViewController _web3webViewController;
 
   @override
@@ -427,11 +352,11 @@ class _Web3WebViewState extends State<Web3WebView> {
     }
 
     if (Platform.isAndroid) {
-      initialOptions = widget.initialOptions ?? InAppWebViewGroupOptions();
-      initialOptions!.android.useShouldInterceptRequest = false;
-      initialOptions!.android.useShouldInterceptResponse = true;
+      initialSettings = widget.initialSettings ?? InAppWebViewSettings();
+      initialSettings!.useShouldInterceptRequest = false;
+      initialSettings!.useShouldInterceptResponse = true;
     } else {
-      initialOptions = widget.initialOptions;
+      initialSettings = widget.initialSettings;
     }
 
     _web3webViewController = Web3WebViewController(widget);
@@ -449,27 +374,24 @@ class _Web3WebViewState extends State<Web3WebView> {
             onWebViewCreated: _onWeb3WebViewCreated,
             initialUrlRequest: widget.initialUrlRequest,
             windowId: widget.windowId,
-            initialFile: widget.initialFile,
-            initialData: widget.initialData,
-            initialOptions: initialOptions,
+            initialSettings: initialSettings,
             initialUserScripts:
                 snapshot.data! as UnmodifiableListView<UserScript>,
             // androidShouldInterceptRequest: widget.androidEnableUserScript
             //     ? widget.androidShouldInterceptRequest
             //     : androidShouldInterceptRequest,
-            androidShouldInterceptResponse: androidShouldInterceptResponse,
+            shouldInterceptResponse: androidShouldInterceptResponse,
             pullToRefreshController: widget.pullToRefreshController,
             contextMenu: widget.contextMenu,
             onLoadStart: widget.onLoadStart,
             onLoadStop: widget.onLoadStop,
-            onLoadError: widget.onLoadError,
-            onLoadHttpError: widget.onLoadHttpError,
+            onReceivedError: widget.onReceivedError,
+            onReceivedHttpError: widget.onReceivedHttpError,
             onConsoleMessage: widget.onConsoleMessage,
             onProgressChanged: widget.onProgressChanged,
             shouldOverrideUrlLoading: widget.shouldOverrideUrlLoading,
             onLoadResource: widget.onLoadResource,
             onScrollChanged: widget.onScrollChanged,
-            onLoadResourceCustomScheme: widget.onLoadResourceCustomScheme,
             onCreateWindow: widget.onCreateWindow,
             onCloseWindow: widget.onCloseWindow,
             onJsAlert: widget.onJsAlert,
@@ -479,13 +401,11 @@ class _Web3WebViewState extends State<Web3WebView> {
             onReceivedServerTrustAuthRequest:
                 widget.onReceivedServerTrustAuthRequest,
             onReceivedClientCertRequest: widget.onReceivedClientCertRequest,
-            onFindResultReceived: widget.onFindResultReceived,
             shouldInterceptAjaxRequest: widget.shouldInterceptAjaxRequest,
             onAjaxReadyStateChange: widget.onAjaxReadyStateChange,
             onAjaxProgress: widget.onAjaxProgress,
             shouldInterceptFetchRequest: widget.shouldInterceptFetchRequest,
             onUpdateVisitedHistory: widget.onUpdateVisitedHistory,
-            onPrint: widget.onPrint,
             onLongPressHitTestResult: widget.onLongPressHitTestResult,
             onEnterFullscreen: widget.onEnterFullscreen,
             onExitFullscreen: widget.onExitFullscreen,
@@ -494,29 +414,6 @@ class _Web3WebViewState extends State<Web3WebView> {
             onWindowFocus: widget.onWindowFocus,
             onWindowBlur: widget.onWindowBlur,
             onOverScrolled: widget.onOverScrolled,
-            onZoomScaleChanged: widget.onZoomScaleChanged,
-            androidOnSafeBrowsingHit: widget.androidOnSafeBrowsingHit,
-            androidOnPermissionRequest: widget.androidOnPermissionRequest,
-            androidOnGeolocationPermissionsShowPrompt:
-                widget.androidOnGeolocationPermissionsShowPrompt,
-            androidOnGeolocationPermissionsHidePrompt:
-                widget.androidOnGeolocationPermissionsHidePrompt,
-            androidOnRenderProcessGone: widget.androidOnRenderProcessGone,
-            androidOnRenderProcessResponsive:
-                widget.androidOnRenderProcessResponsive,
-            androidOnRenderProcessUnresponsive:
-                widget.androidOnRenderProcessUnresponsive,
-            androidOnFormResubmission: widget.androidOnFormResubmission,
-            androidOnReceivedIcon: widget.androidOnReceivedIcon,
-            androidOnReceivedTouchIconUrl: widget.androidOnReceivedTouchIconUrl,
-            androidOnJsBeforeUnload: widget.androidOnJsBeforeUnload,
-            androidOnReceivedLoginRequest: widget.androidOnReceivedLoginRequest,
-            iosOnWebContentProcessDidTerminate:
-                widget.iosOnWebContentProcessDidTerminate,
-            iosOnDidReceiveServerRedirectForProvisionalNavigation:
-                widget.iosOnDidReceiveServerRedirectForProvisionalNavigation,
-            iosOnNavigationResponse: widget.iosOnNavigationResponse,
-            iosShouldAllowDeprecatedTLS: widget.iosShouldAllowDeprecatedTLS,
             gestureRecognizers: widget.gestureRecognizers,
           );
         });
@@ -526,7 +423,7 @@ class _Web3WebViewState extends State<Web3WebView> {
       InAppWebViewController controller, WebResourceResponse resp) async {
     if (resp.contentType == "text/html") {
       final allUserScripts =
-          await _web3webViewController.getAllUserScript(Uri.parse(resp.url!));
+          await _web3webViewController.getAllUserScript(null);
 
       String userScriptInject = "";
       for (var s in allUserScripts) {
@@ -543,13 +440,11 @@ class _Web3WebViewState extends State<Web3WebView> {
       }
     }
 
-    if (resp.statusCode == null) {
-      resp.statusCode = 200;
-      resp.reasonPhrase = 'Status OK';
-    }
+    resp.statusCode ??= 200;
+    resp.reasonPhrase ??= 'Status OK';
 
     if (widget.debugEnabled ?? false) {
-      log("web3webview_flutter androidShouldInterceptResponse ${resp.contentType} ${resp.url.toString()}");
+      log("web3webview_flutter androidShouldInterceptResponse ${resp.contentType}");
     }
 
     return resp;

@@ -1,5 +1,4 @@
 import 'dart:developer';
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -8,11 +7,7 @@ import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  if (Platform.isAndroid) {
-    await AndroidInAppWebViewController.setWebContentsDebuggingEnabled(true);
-  }
-
+  await InAppWebViewController.setWebContentsDebuggingEnabled(true);
   runApp(const MyApp());
 }
 
@@ -131,38 +126,33 @@ class _MyHomePageState extends State<MyHomePage> {
           _callback,
           _onRetriveRpc,
           androidEnableUserScript: false,
-          initialOptions: InAppWebViewGroupOptions(
-            crossPlatform: InAppWebViewOptions(
-              useShouldOverrideUrlLoading: true,
-              mediaPlaybackRequiresUserGesture: false,
-            ),
-            android: AndroidInAppWebViewOptions(
-              useHybridComposition:
-                  true, // 解决 https://github.com/flutter/flutter/issues/90207
-              supportMultipleWindows: true,
-            ),
-            ios: IOSInAppWebViewOptions(
-              allowsInlineMediaPlayback: true,
-            ),
+          initialSettings: InAppWebViewSettings(
+            useShouldOverrideUrlLoading: true,
+            mediaPlaybackRequiresUserGesture: false,
+            useHybridComposition: true,
+            supportMultipleWindows: true,
+            allowsInlineMediaPlayback: true,
           ),
-          initialUrlRequest:
-              // URLRequest(url: Uri.parse("https://web3-react-mu.vercel.app")),
-              // URLRequest(url: Uri.parse("https://web3modal.com")),
-              // URLRequest(url: Uri.parse("https://app.sushi.com/en/swap")),
-              // URLRequest(url: Uri.parse("https://baidu.com")),
-              // URLRequest(
-              //     url: Uri.parse("https://ddg.gg/?q=ethereum+account+balance")),
-              // URLRequest(url: Uri.parse("https://pancakeswap.finance/swap")),
-              URLRequest(url: Uri.parse("https://playtimedao.io")),
-          // URLRequest(url: Uri.parse("https://opensea.io")),
+          initialUrlRequest: 
+          //URLRequest(url: WebUri.uri(Uri.parse("https://web3-react-mu.vercel.app"))),
+          // URLRequest(url: WebUri.uri(Uri.parse("https://web3modal.com"))),
+          // URLRequest(url: WebUri.uri(Uri.parse("https://app.sushi.com/en/swap"))),
+          // URLRequest(url: Uri.parse("https://baidu.com")),
+          // URLRequest(
+          //     url: Uri.parse("https://ddg.gg/?q=ethereum+account+balance")),
+          // URLRequest(url: WebUri.uri(
+          //             Uri.parse("https://pancakeswap.finance/swap"))),
+          // URLRequest(url: WebUri.uri(Uri.parse("https://playtimedao.io"))),
+          // URLRequest(url: WebUri.uri(Uri.parse("https://opensea.io"))),
           // URLRequest(url: Uri.parse("https://www.sandbox.game")),
           // URLRequest(url: Uri.parse("https://httpbin.org/anything")),
-          // URLRequest(
-          //     url: Uri.parse("https://bitizenwallet.github.io/test-dapp/")),
+          URLRequest(url: WebUri.uri(Uri.parse("http://192.168.55.163:8090"))),
+          // URLRequest(url: WebUri.uri(
+          //             Uri.parse("https://bitizenwallet.github.io/test-dapp/"))),
           onWeb3WebViewCreated: _onWeb3WebViewCreated,
           onLoadStop: _onPageFinished,
           shouldOverrideUrlLoading: _shouldOverrideUrlLoading,
-          onLoadError: _onLoadError,
+          onReceivedError: _onReceivedError,
           debugEnabled: true,
         ),
       ),
@@ -198,8 +188,8 @@ class _MyHomePageState extends State<MyHomePage> {
     return NavigationActionPolicy.ALLOW;
   }
 
-  void _onLoadError(
-      InAppWebViewController controller, Uri? url, int code, String message) {
-    log("bingo _onLoadError $url $code $message");
+  void _onReceivedError(InAppWebViewController controller,
+      WebResourceRequest? req, WebResourceError? err) {
+    log("bingo _onReceivedError $req $err");
   }
 }
