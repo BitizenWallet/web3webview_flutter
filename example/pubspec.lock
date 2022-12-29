@@ -67,7 +67,7 @@ packages:
     description:
       path: "."
       ref: master
-      resolved-ref: "77390f0e6703638884c558e7c57f6089fd49ea53"
+      resolved-ref: "5bb1898bcada70c5e5cc664d60389c5305c8950f"
       url: "git@github.com:BitizenWallet/flutter_inappwebview.git"
     source: git
     version: "6.0.0-beta.22"

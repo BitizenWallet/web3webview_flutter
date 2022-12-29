@@ -133,8 +133,9 @@ class _MyHomePageState extends State<MyHomePage> {
             supportMultipleWindows: true,
             allowsInlineMediaPlayback: true,
           ),
-          initialUrlRequest: 
-          //URLRequest(url: WebUri.uri(Uri.parse("https://web3-react-mu.vercel.app"))),
+          initialUrlRequest:
+              URLRequest(url: WebUri.uri(Uri.parse("https://uniswap.org"))),
+          // URLRequest(url: WebUri.uri(Uri.parse("https://web3-react-mu.vercel.app"))),
           // URLRequest(url: WebUri.uri(Uri.parse("https://web3modal.com"))),
           // URLRequest(url: WebUri.uri(Uri.parse("https://app.sushi.com/en/swap"))),
           // URLRequest(url: Uri.parse("https://baidu.com")),
@@ -146,7 +147,7 @@ class _MyHomePageState extends State<MyHomePage> {
           // URLRequest(url: WebUri.uri(Uri.parse("https://opensea.io"))),
           // URLRequest(url: Uri.parse("https://www.sandbox.game")),
           // URLRequest(url: Uri.parse("https://httpbin.org/anything")),
-          URLRequest(url: WebUri.uri(Uri.parse("http://192.168.55.163:8090"))),
+          // URLRequest(url: WebUri.uri(Uri.parse("http://192.168.55.163:8090"))),
           // URLRequest(url: WebUri.uri(
           //             Uri.parse("https://bitizenwallet.github.io/test-dapp/"))),
           onWeb3WebViewCreated: _onWeb3WebViewCreated,
@@ -154,6 +155,10 @@ class _MyHomePageState extends State<MyHomePage> {
           shouldOverrideUrlLoading: _shouldOverrideUrlLoading,
           onReceivedError: _onReceivedError,
           debugEnabled: true,
+          onCreateWindow: (controller, createWindowAction) {
+            print("bingo onCreateWindow ${createWindowAction.request.url}");
+            return Future.value(false);
+          },
         ),
       ),
     );
