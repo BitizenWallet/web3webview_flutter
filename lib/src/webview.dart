@@ -133,7 +133,7 @@ class Web3WebViewController {
   Future<UnmodifiableListView<UserScript>> getAllUserScript(Uri? url) async {
     final debugable = (widget.debugEnabled ?? false) ||
         (url?.toString() ?? "").contains("__debug");
-    List<String> rpc = await widget.onRetriveRpc();
+    List<String?> rpc = await widget.onRetriveRpc();
     if (debugable) {
       log("web3webview_flutter getAllUserScript url: $url, debugable: $debugable rpc: $rpc");
     }
@@ -142,8 +142,10 @@ class Web3WebViewController {
         source: injectJs
             .replaceFirst("#BITIZEN_INJECT#", injectJsBundle)
             .replaceFirst("#BITIZEN_DEBUG#", debugable ? "√" : "")
-            .replaceFirst("#BITIZEN_CHAINID#", rpc[0])
-            .replaceFirst("#BITIZEN_RPC#", rpc[1]),
+            .replaceFirst("\"#BITIZEN_CHAINID#\"",
+                rpc[0] != null ? "\"${rpc[0]}\"" : "null")
+            .replaceFirst(
+                "\"#BITIZEN_RPC#\"", rpc[1] != null ? "\"${rpc[1]}\"" : "null"),
         injectionTime: UserScriptInjectionTime.AT_DOCUMENT_START,
         forMainFrameOnly: true,
       ),
@@ -169,7 +171,7 @@ class Web3WebView extends StatefulWidget {
   //         InAppWebViewController controller, WebResourceRequest request)?
   //     androidShouldInterceptRequest;
   final Future<Web3RpcResponse> Function(Web3RpcRequest) onRpcRequest;
-  final Future<List<String>> Function() onRetriveRpc;
+  final Future<List<String?>> Function() onRetriveRpc;
 
   final URLRequest? initialUrlRequest;
   final void Function(Web3WebViewController)? onWeb3WebViewCreated;
