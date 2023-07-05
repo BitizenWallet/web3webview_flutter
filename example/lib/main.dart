@@ -35,7 +35,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   String _title = 'Flutter Demo Home Page';
-  List<String> _rpc = [
+  final List<String> _rpc = [
     "0x${1.toRadixString(16)}",
     "https://cloudflare-eth.com/",
   ];
@@ -96,11 +96,6 @@ class _MyHomePageState extends State<MyHomePage> {
   // ignore: unused_element
   void _testUpdateRpcUrl(InAppWebViewController controller) async {
     await Future.delayed(const Duration(seconds: 60));
-    log("testUpdateRpcUrl");
-    _rpc = ["0x${100.toRadixString(16)}", "https://rpc.gnosischain.com"];
-    await _web3WebViewController!.updateReadRpcUrls([
-      [_rpc[0], _rpc[1]]
-    ]);
     await _web3WebViewController!
         .emitChainChanged("0x${100.toRadixString(16)}");
     await _web3WebViewController!.emitNetworkChanged(100);
@@ -124,7 +119,7 @@ class _MyHomePageState extends State<MyHomePage> {
       body: Center(
         child: Web3WebView(
           _callback,
-          _onRetriveRpc,
+          () => Future.value("0x1"),
           androidEnableUserScript: false,
           initialSettings: InAppWebViewSettings(
             useShouldOverrideUrlLoading: true,
@@ -166,11 +161,6 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void _onWeb3WebViewCreated(Web3WebViewController controller) {
     _web3WebViewController = controller;
-  }
-
-  Future<List<String>> _onRetriveRpc() async {
-    await Future.delayed(const Duration(seconds: 3));
-    return _rpc;
   }
 
   Future<NavigationActionPolicy?> _shouldOverrideUrlLoading(

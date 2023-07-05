@@ -119,33 +119,17 @@ class Web3WebViewController {
             'window.ethereum._BitizenEventEmit("accountsChanged", [${jsonEncode(newAccounts)}]);');
   }
 
-  /// updateRpcUrl [list]: `[[chainId, rpcUrl]]`
-  Future<dynamic> updateReadRpcUrls(List<List<String>> list) async {
-    await inAppWebViewController?.removeAllUserScripts();
-    await inAppWebViewController?.addUserScripts(
-        userScripts:
-            await getAllUserScript(await inAppWebViewController?.getUrl()));
-    return inAppWebViewController?.evaluateJavascript(
-        source:
-            'window.ethereum._BitizenUpdateReadRpcEngines(${jsonEncode(list)});');
-  }
-
   Future<UnmodifiableListView<UserScript>> getAllUserScript(Uri? url) async {
     final debugable = (widget.debugEnabled ?? false) ||
         (url?.toString() ?? "").contains("__debug");
-    List<String?> rpc = await widget.onRetriveRpc();
-    if (debugable) {
-      log("web3webview_flutter getAllUserScript url: $url, debugable: $debugable rpc: $rpc");
-    }
+    String? defaultChainId = await widget.getDefaultChainId();
     return UnmodifiableListView([
       UserScript(
         source: injectJs
             .replaceFirst("#BITIZEN_INJECT#", injectJsBundle)
             .replaceFirst("#BITIZEN_DEBUG#", debugable ? "√" : "")
             .replaceFirst("\"#BITIZEN_CHAINID#\"",
-                rpc[0] != null ? "\"${rpc[0]}\"" : "null")
-            .replaceFirst(
-                "\"#BITIZEN_RPC#\"", rpc[1] != null ? "\"${rpc[1]}\"" : "null"),
+                defaultChainId != null ? "\"$defaultChainId\"" : "null"),
         injectionTime: UserScriptInjectionTime.AT_DOCUMENT_START,
         forMainFrameOnly: true,
       ),
@@ -171,7 +155,6 @@ class Web3WebView extends StatefulWidget {
   //         InAppWebViewController controller, WebResourceRequest request)?
   //     androidShouldInterceptRequest;
   final Future<Web3RpcResponse> Function(Web3RpcRequest) onRpcRequest;
-  final Future<List<String?>> Function() onRetriveRpc;
 
   final URLRequest? initialUrlRequest;
   final void Function(Web3WebViewController)? onWeb3WebViewCreated;
@@ -250,10 +233,11 @@ class Web3WebView extends StatefulWidget {
   final void Function(InAppWebViewController controller)? onExitFullscreen;
   final void Function(InAppWebViewController controller, int x, int y,
       bool clampedX, bool clampedY)? onOverScrolled;
+  final Future<String?> Function() getDefaultChainId;
 
   const Web3WebView(
     this.onRpcRequest,
-    this.onRetriveRpc, {
+    this.getDefaultChainId, {
     Key? key,
     this.onWeb3WebViewCreated,
     this.initialUrlRequest,
