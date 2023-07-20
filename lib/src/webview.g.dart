@@ -8,7 +8,6 @@ part of web3webview_flutter;
 
 Web3RpcRequest _$Web3RpcRequestFromJson(Map<String, dynamic> json) =>
     Web3RpcRequest(
-      json['chainId'] as String,
       json['method'] as String,
       id: json['id'] as int?,
       jsonrpc: json['jsonrpc'] as String?,
@@ -17,7 +16,6 @@ Web3RpcRequest _$Web3RpcRequestFromJson(Map<String, dynamic> json) =>
 
 Map<String, dynamic> _$Web3RpcRequestToJson(Web3RpcRequest instance) =>
     <String, dynamic>{
-      'chainId': instance.chainId,
       'method': instance.method,
       'id': instance.id,
       'jsonrpc': instance.jsonrpc,

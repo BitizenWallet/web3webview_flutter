@@ -119,7 +119,6 @@ class _MyHomePageState extends State<MyHomePage> {
       body: Center(
         child: Web3WebView(
           _callback,
-          () => Future.value("0x1"),
           androidEnableUserScript: false,
           initialSettings: InAppWebViewSettings(
             useShouldOverrideUrlLoading: true,

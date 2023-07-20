@@ -18,14 +18,12 @@ part 'webview.g.dart';
 
 @JsonSerializable()
 class Web3RpcRequest {
-  final String chainId;
   final String method;
   final int? id;
   final String? jsonrpc;
   final Object? params;
 
-  Web3RpcRequest(this.chainId, this.method,
-      {this.id, this.jsonrpc, this.params});
+  Web3RpcRequest(this.method, {this.id, this.jsonrpc, this.params});
 
   factory Web3RpcRequest.fromJson(Map<String, dynamic> json) =>
       _$Web3RpcRequestFromJson(json);
@@ -119,17 +117,10 @@ class Web3WebViewController {
             'window.ethereum._BitizenEventEmit("accountsChanged", [${jsonEncode(newAccounts)}]);');
   }
 
-  Future<UnmodifiableListView<UserScript>> getAllUserScript(Uri? url) async {
-    final debugable = (widget.debugEnabled ?? false) ||
-        (url?.toString() ?? "").contains("__debug");
-    String? defaultChainId = await widget.getDefaultChainId();
+  UnmodifiableListView<UserScript> getAllUserScript(Uri? url) {
     return UnmodifiableListView([
       UserScript(
-        source: injectJs
-            .replaceFirst("#BITIZEN_INJECT#", injectJsBundle)
-            .replaceFirst("#BITIZEN_DEBUG#", debugable ? "√" : "")
-            .replaceFirst("\"#BITIZEN_CHAINID#\"",
-                defaultChainId != null ? "\"$defaultChainId\"" : "null"),
+        source: injectJs.replaceFirst("#BITIZEN_INJECT#", injectJsBundle),
         injectionTime: UserScriptInjectionTime.AT_DOCUMENT_START,
         forMainFrameOnly: true,
       ),
@@ -233,11 +224,9 @@ class Web3WebView extends StatefulWidget {
   final void Function(InAppWebViewController controller)? onExitFullscreen;
   final void Function(InAppWebViewController controller, int x, int y,
       bool clampedX, bool clampedY)? onOverScrolled;
-  final Future<String?> Function() getDefaultChainId;
 
   const Web3WebView(
-    this.onRpcRequest,
-    this.getDefaultChainId, {
+    this.onRpcRequest, {
     Key? key,
     this.onWeb3WebViewCreated,
     this.initialUrlRequest,
@@ -349,71 +338,59 @@ class _Web3WebViewState extends State<Web3WebView> {
 
     _web3webViewController = Web3WebViewController(widget);
 
-    return FutureBuilder(
-        future: Platform.isAndroid && !widget.androidEnableUserScript
-            ? Future.value(UnmodifiableListView<UserScript>([]))
-            : _web3webViewController
-                .getAllUserScript(widget.initialUrlRequest?.url),
-        builder: (context, snapshot) {
-          if (!snapshot.hasData) {
-            return Container();
-          }
-          return InAppWebView(
-            onWebViewCreated: _onWeb3WebViewCreated,
-            initialUrlRequest: widget.initialUrlRequest,
-            windowId: widget.windowId,
-            initialSettings: initialSettings,
-            initialUserScripts:
-                snapshot.data! as UnmodifiableListView<UserScript>,
-            // androidShouldInterceptRequest: widget.androidEnableUserScript
-            //     ? widget.androidShouldInterceptRequest
-            //     : androidShouldInterceptRequest,
-            shouldInterceptResponse: widget.androidEnableUserScript
-                ? null
-                : androidShouldInterceptResponse,
-            pullToRefreshController: widget.pullToRefreshController,
-            contextMenu: widget.contextMenu,
-            onLoadStart: widget.onLoadStart,
-            onLoadStop: widget.onLoadStop,
-            onReceivedError: widget.onReceivedError,
-            onReceivedHttpError: widget.onReceivedHttpError,
-            onConsoleMessage: widget.onConsoleMessage,
-            onProgressChanged: widget.onProgressChanged,
-            shouldOverrideUrlLoading: widget.shouldOverrideUrlLoading,
-            onLoadResource: widget.onLoadResource,
-            onScrollChanged: widget.onScrollChanged,
-            onCreateWindow: widget.onCreateWindow,
-            onCloseWindow: widget.onCloseWindow,
-            onJsAlert: widget.onJsAlert,
-            onJsConfirm: widget.onJsConfirm,
-            onJsPrompt: widget.onJsPrompt,
-            onReceivedHttpAuthRequest: widget.onReceivedHttpAuthRequest,
-            onReceivedServerTrustAuthRequest:
-                widget.onReceivedServerTrustAuthRequest,
-            onReceivedClientCertRequest: widget.onReceivedClientCertRequest,
-            shouldInterceptAjaxRequest: widget.shouldInterceptAjaxRequest,
-            onAjaxReadyStateChange: widget.onAjaxReadyStateChange,
-            onAjaxProgress: widget.onAjaxProgress,
-            shouldInterceptFetchRequest: widget.shouldInterceptFetchRequest,
-            onUpdateVisitedHistory: widget.onUpdateVisitedHistory,
-            onLongPressHitTestResult: widget.onLongPressHitTestResult,
-            onEnterFullscreen: widget.onEnterFullscreen,
-            onExitFullscreen: widget.onExitFullscreen,
-            onPageCommitVisible: widget.onPageCommitVisible,
-            onTitleChanged: widget.onTitleChanged,
-            onWindowFocus: widget.onWindowFocus,
-            onWindowBlur: widget.onWindowBlur,
-            onOverScrolled: widget.onOverScrolled,
-            gestureRecognizers: widget.gestureRecognizers,
-          );
-        });
+    return InAppWebView(
+      onWebViewCreated: _onWeb3WebViewCreated,
+      initialUrlRequest: widget.initialUrlRequest,
+      windowId: widget.windowId,
+      initialSettings: initialSettings,
+      initialUserScripts: _web3webViewController
+          .getAllUserScript(widget.initialUrlRequest?.url),
+      // androidShouldInterceptRequest: widget.androidEnableUserScript
+      //     ? widget.androidShouldInterceptRequest
+      //     : androidShouldInterceptRequest,
+      shouldInterceptResponse: widget.androidEnableUserScript
+          ? null
+          : androidShouldInterceptResponse,
+      pullToRefreshController: widget.pullToRefreshController,
+      contextMenu: widget.contextMenu,
+      onLoadStart: widget.onLoadStart,
+      onLoadStop: widget.onLoadStop,
+      onReceivedError: widget.onReceivedError,
+      onReceivedHttpError: widget.onReceivedHttpError,
+      onConsoleMessage: widget.onConsoleMessage,
+      onProgressChanged: widget.onProgressChanged,
+      shouldOverrideUrlLoading: widget.shouldOverrideUrlLoading,
+      onLoadResource: widget.onLoadResource,
+      onScrollChanged: widget.onScrollChanged,
+      onCreateWindow: widget.onCreateWindow,
+      onCloseWindow: widget.onCloseWindow,
+      onJsAlert: widget.onJsAlert,
+      onJsConfirm: widget.onJsConfirm,
+      onJsPrompt: widget.onJsPrompt,
+      onReceivedHttpAuthRequest: widget.onReceivedHttpAuthRequest,
+      onReceivedServerTrustAuthRequest: widget.onReceivedServerTrustAuthRequest,
+      onReceivedClientCertRequest: widget.onReceivedClientCertRequest,
+      shouldInterceptAjaxRequest: widget.shouldInterceptAjaxRequest,
+      onAjaxReadyStateChange: widget.onAjaxReadyStateChange,
+      onAjaxProgress: widget.onAjaxProgress,
+      shouldInterceptFetchRequest: widget.shouldInterceptFetchRequest,
+      onUpdateVisitedHistory: widget.onUpdateVisitedHistory,
+      onLongPressHitTestResult: widget.onLongPressHitTestResult,
+      onEnterFullscreen: widget.onEnterFullscreen,
+      onExitFullscreen: widget.onExitFullscreen,
+      onPageCommitVisible: widget.onPageCommitVisible,
+      onTitleChanged: widget.onTitleChanged,
+      onWindowFocus: widget.onWindowFocus,
+      onWindowBlur: widget.onWindowBlur,
+      onOverScrolled: widget.onOverScrolled,
+      gestureRecognizers: widget.gestureRecognizers,
+    );
   }
 
   Future<WebResourceResponse?> androidShouldInterceptResponse(
       InAppWebViewController controller, WebResourceResponse resp) async {
     if (resp.contentType == "text/html") {
-      final allUserScripts =
-          await _web3webViewController.getAllUserScript(null);
+      final allUserScripts = _web3webViewController.getAllUserScript(null);
 
       String userScriptInject = "";
       for (var s in allUserScripts) {

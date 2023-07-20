@@ -4,7 +4,7 @@ import 'package:web3webview_flutter/web3webview_flutter.dart';
 
 void main() {
   test('ok', () {
-    Web3WebView(_callback, () => Future.value("0x1"));
+    const Web3WebView(_callback);
   });
 }
 
