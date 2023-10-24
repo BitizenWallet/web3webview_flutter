@@ -35,16 +35,6 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   String _title = 'Flutter Demo Home Page';
-  final List<String> _rpc = [
-    "0x${1.toRadixString(16)}",
-    "https://cloudflare-eth.com/",
-  ];
-
-  // List<String> _rpc = [
-  //   "0x${56.toRadixString(16)}",
-  //   "https://bsc-dataseed.binance.org"
-  // ];
-
   final demoAccounts = [
     "0x0000000000000000000000000000000000000000",
     "0x0000000000000000000000000000000000000001"
@@ -150,7 +140,6 @@ class _MyHomePageState extends State<MyHomePage> {
           onReceivedError: _onReceivedError,
           debugEnabled: true,
           onCreateWindow: (controller, createWindowAction) {
-            print("bingo onCreateWindow ${createWindowAction.request.url}");
             return Future.value(false);
           },
         ),
